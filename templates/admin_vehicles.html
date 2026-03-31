@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Manage Vehicles | Admin{% endblock %}
+{% block content %}
+<div class="admin-container">
+  <div class="admin-header">
+    <div><h1>🚗 Vehicle Management</h1><p>Add, edit, delete and manage your fleet</p></div>
+    <a href="{{ url_for('add_vehicle') }}" class="btn-primary">+ Add New Vehicle</a>
+  </div>
+  <form method="GET" class="admin-search-form">
+    <input type="text" name="search" value="{{ search }}" placeholder="🔍  Search vehicles...">
+    <button type="submit" class="btn-primary">Search</button>
+    {% if search %}<a href="{{ url_for('admin_vehicles') }}" class="btn-outline">Clear</a>{% endif %}
+  </form>
+  <div class="stats-row">
+    <div class="stat-chip">Total: <strong>{{ vehicles|length }}</strong></div>
+    <div class="stat-chip available">Available: <strong>{{ vehicles|selectattr('status','equalto','available')|list|length }}</strong></div>
+    <div class="stat-chip unavailable">Unavailable: <strong>{{ vehicles|selectattr('status','equalto','unavailable')|list|length }}</strong></div>
+  </div>
+  {% if vehicles %}
+  <div class="table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr><th>#</th><th>Image</th><th>Name</th><th>Brand</th><th>Category</th><th>Seats</th><th>Fuel</th><th>Price/Day</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for v in vehicles %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td><img src="{{ url_for('static', filename='uploads/' + v.image) }}" onerror="this.src='{{ url_for('static', filename='placeholder.jpg') }}'" class="table-thumb" alt="{{ v.name }}"></td>
+          <td><strong>{{ v.name }}</strong></td>
+          <td>{{ v.brand }}</td>
+          <td><span class="category-tag">{{ v.category }}</span></td>
+          <td>{{ v.seats }}</td>
+          <td>{{ v.fuel_type }}</td>
+          <td><strong>৳{{ "%.0f"|format(v.price_per_day) }}</strong></td>
+          <td>
+            <form method="POST" action="{{ url_for('toggle_status', vid=v.id) }}" style="display:inline">
+              <button type="submit" class="status-toggle status-{{ v.status }}">{{ v.status|capitalize }}</button>
+            </form>
+          </td>
+          <td class="action-btns">
+            <a href="{{ url_for('vehicle_detail', vid=v.id) }}" class="btn-view" title="View">👁</a>
+            <a href="{{ url_for('edit_vehicle', vid=v.id) }}" class="btn-edit-sm" title="Edit">✏️</a>
+            <form method="POST" action="{{ url_for('delete_vehicle', vid=v.id) }}" onsubmit="return confirm('Delete {{ v.name }}?')" style="display:inline">
+              <button type="submit" class="btn-delete-sm" title="Delete">🗑</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><span>🚘</span><h3>No vehicles yet</h3><a href="{{ url_for('add_vehicle') }}" class="btn-primary">+ Add Vehicle</a></div>
+  {% endif %}
+</div>
+{% endblock %}
