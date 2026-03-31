@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% block title %}Book {{ vehicle.name }} | RentWheels{% endblock %}
+{% block content %}
+
+<div class="booking-page">
+  <a href="{{ url_for('vehicle_detail', vid=vehicle.id) }}" class="back-link">← Back to Vehicle</a>
+
+  <div class="booking-grid">
+
+    <!-- LEFT: Vehicle Summary -->
+    <div class="booking-vehicle-card">
+      <img src="{{ url_for('static', filename='uploads/' + vehicle.image) }}"
+           onerror="this.src='{{ url_for('static', filename='placeholder.jpg') }}'"
+           alt="{{ vehicle.name }}">
+      <div class="bvc-info">
+        <span class="category-tag">{{ vehicle.category }}</span>
+        <h2>{{ vehicle.name }}</h2>
+        <p class="bvc-brand">{{ vehicle.brand }}</p>
+        <div class="bvc-specs">
+          <span>🪑 {{ vehicle.seats }} Seats</span>
+          <span>⛽ {{ vehicle.fuel_type }}</span>
+          <span>⚙️ {{ vehicle.transmission }}</span>
+        </div>
+        <div class="bvc-rate-box">
+          <div class="bvc-rate-item">
+            <span>Daily Rate</span>
+            <strong>৳{{ "%.0f"|format(vehicle.price_per_day) }}/day</strong>
+          </div>
+          <div class="bvc-rate-divider"></div>
+          <div class="bvc-rate-item">
+            <span>Hourly Rate</span>
+            <strong>৳{{ "%.0f"|format(vehicle.price_per_hour if vehicle.price_per_hour else vehicle.price_per_day / 8) }}/hr</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Booking Form -->
+    <div class="booking-form-card">
+      <h2>Confirm Your Booking</h2>
+      <p class="form-subtitle">Choose daily or hourly rental</p>
+
+      <form method="POST" id="bookingForm">
+
+        <!-- RENTAL TYPE TOGGLE -->
+        <div class="rental-toggle">
+          <button type="button" class="toggle-btn active" id="btnDaily" onclick="setType('daily')">
+            📅 Daily Rental
+          </button>
+          <button type="button" class="toggle-btn" id="btnHourly" onclick="setType('hourly')">
+            ⏱ Hourly Rental
+          </button>
+        </div>
+        <input type="hidden" name="rental_type" id="rentalType" value="daily">
+
+        <!-- PICKUP DATE (always shown) -->
+        <div class="form-group">
+          <label id="pickupLabel">📅 Pickup Date</label>
+          <input type="date" name="pickup_date" id="pickupDate" min="{{ today }}" required>
+        </div>
+
+        <!-- DAILY: Return Date -->
+        <div id="dailyFields">
+          <div class="form-group">
+            <label>📅 Return Date</label>
+            <input type="date" name="return_date" id="returnDate" min="{{ today }}" required>
+          </div>
+        </div>
+
+        <!-- HOURLY: Time Pickers -->
+        <div id="hourlyFields" style="display:none">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>🕐 Pickup Time</label>
+              <input type="time" name="pickup_time" id="pickupTime">
+            </div>
+            <div class="form-group">
+              <label>🕐 Return Time</label>
+              <input type="time" name="return_time" id="returnTime">
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Price Calculator -->
+        <div class="price-summary" id="priceSummary" style="display:none">
+          <div class="ps-row"><span id="durationLabel">Duration</span><strong id="daysCount">—</strong></div>
+          <div class="ps-row"><span>Rate</span><strong id="rateDisplay">—</strong></div>
+          <div class="ps-row total"><span>Total</span><strong id="totalPrice">৳0</strong></div>
+        </div>
+
+        <div class="form-group">
+          <label>📝 Special Note (optional)</label>
+          <textarea name="note" rows="2" placeholder="Any special requests..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary btn-lg btn-full">🚗 Confirm Booking</button>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const pricePerDay  = {{ vehicle.price_per_day }};
+  const pricePerHour = {{ vehicle.price_per_hour if vehicle.price_per_hour else (vehicle.price_per_day / 8)|round(2) }};
+
+  function setType(type) {
+    document.getElementById('rentalType').value = type;
+    const dailyFields  = document.getElementById('dailyFields');
+    const hourlyFields = document.getElementById('hourlyFields');
+
+    if (type === 'daily') {
+      document.getElementById('btnDaily').classList.add('active');
+      document.getElementById('btnHourly').classList.remove('active');
+      dailyFields.style.display  = 'block';
+      hourlyFields.style.display = 'none';
+      document.getElementById('pickupLabel').textContent = '📅 Pickup Date';
+      document.getElementById('returnDate').required  = true;
+      document.getElementById('pickupTime').required  = false;
+      document.getElementById('returnTime').required  = false;
+    } else {
+      document.getElementById('btnHourly').classList.add('active');
+      document.getElementById('btnDaily').classList.remove('active');
+      dailyFields.style.display  = 'none';
+      hourlyFields.style.display = 'block';
+      document.getElementById('pickupLabel').textContent = '📅 Rental Date';
+      document.getElementById('returnDate').required  = false;
+      document.getElementById('pickupTime').required  = true;
+      document.getElementById('returnTime').required  = true;
+    }
+    calcPrice();
+  }
+
+  function calcPrice() {
+    const type    = document.getElementById('rentalType').value;
+    const summary = document.getElementById('priceSummary');
+
+    if (type === 'daily') {
+      const p = new Date(document.getElementById('pickupDate').value);
+      const r = new Date(document.getElementById('returnDate').value);
+      if (document.getElementById('pickupDate').value && document.getElementById('returnDate').value && r > p) {
+        const days  = Math.round((r - p) / (1000 * 60 * 60 * 24));
+        const total = days * pricePerDay;
+        document.getElementById('durationLabel').textContent = 'Duration';
+        document.getElementById('daysCount').textContent     = days + ' day' + (days !== 1 ? 's' : '');
+        document.getElementById('rateDisplay').textContent   = '৳' + pricePerDay.toLocaleString() + '/day';
+        document.getElementById('totalPrice').textContent    = '৳' + total.toLocaleString();
+        summary.style.display = 'block';
+      } else { summary.style.display = 'none'; }
+
+    } else {
+      const pt = document.getElementById('pickupTime').value;
+      const rt = document.getElementById('returnTime').value;
+      if (pt && rt && rt > pt) {
+        const [ph, pm] = pt.split(':').map(Number);
+        const [rh, rm] = rt.split(':').map(Number);
+        const totalMins  = (rh * 60 + rm) - (ph * 60 + pm);
+        const totalHours = Math.floor(totalMins / 60);
+        const extraMins  = totalMins % 60;
+        if (totalHours >= 1) {
+          const total = totalHours * pricePerHour;
+          document.getElementById('durationLabel').textContent = 'Duration';
+          document.getElementById('daysCount').textContent     = totalHours + ' hr' + (totalHours !== 1 ? 's' : '') + (extraMins > 0 ? ' ' + extraMins + ' min' : '');
+          document.getElementById('rateDisplay').textContent   = '৳' + pricePerHour.toLocaleString() + '/hr';
+          document.getElementById('totalPrice').textContent    = '৳' + total.toLocaleString();
+          summary.style.display = 'block';
+        } else { summary.style.display = 'none'; }
+      } else { summary.style.display = 'none'; }
+    }
+  }
+
+  document.getElementById('pickupDate').addEventListener('change', calcPrice);
+  document.getElementById('returnDate').addEventListener('change', calcPrice);
+  document.getElementById('pickupTime').addEventListener('change', calcPrice);
+  document.getElementById('returnTime').addEventListener('change', calcPrice);
+</script>
+
+{% endblock %}
