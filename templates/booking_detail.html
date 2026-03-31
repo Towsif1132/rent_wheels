@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}Booking #{{ booking.id }} | RentWheels{% endblock %}
+{% block content %}
+
+<div class="page-container">
+  <a href="{{ url_for('my_bookings') if session.user_role != 'admin' else url_for('admin_bookings') }}"
+     class="back-link">← Back to Bookings</a>
+
+  <div class="detail-booking-grid">
+
+    <!-- LEFT -->
+    <div class="db-left">
+      <div class="db-card">
+        <h3>🚗 Vehicle Info</h3>
+        <img src="{{ url_for('static', filename='uploads/' + booking.image) }}"
+             onerror="this.src='{{ url_for('static', filename='placeholder.jpg') }}'"
+             class="db-vehicle-img" alt="{{ booking.vehicle_name }}">
+        <div class="db-spec-list">
+          <div class="db-spec"><span>Name</span><strong>{{ booking.vehicle_name }}</strong></div>
+          <div class="db-spec"><span>Brand</span><strong>{{ booking.brand }}</strong></div>
+          <div class="db-spec"><span>Category</span><strong>{{ booking.category }}</strong></div>
+          <div class="db-spec"><span>Fuel</span><strong>{{ booking.fuel_type }}</strong></div>
+          <div class="db-spec"><span>Transmission</span><strong>{{ booking.transmission }}</strong></div>
+          <div class="db-spec"><span>Seats</span><strong>{{ booking.seats }}</strong></div>
+          <div class="db-spec"><span>Rate</span><strong>৳{{ "%.0f"|format(booking.price_per_day) }}/day</strong></div>
+        </div>
+      </div>
+
+      <div class="db-card">
+        <h3>👤 Customer Info</h3>
+        <div class="db-spec-list">
+          <div class="db-spec"><span>Name</span><strong>{{ booking.customer_name }}</strong></div>
+          <div class="db-spec"><span>Email</span><strong>{{ booking.email }}</strong></div>
+          <div class="db-spec"><span>Phone</span><strong>{{ booking.phone }}</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="db-right">
+      <div class="db-card">
+        <div class="db-booking-header">
+          <h2>Booking #{{ booking.id }}</h2>
+          <span class="booking-status-badge bs-{{ booking.status }}">{{ booking.status|capitalize }}</span>
+        </div>
+        <p class="db-created">Created: {{ booking.created_at.strftime('%d %b %Y, %I:%M %p') }}</p>
+
+        <div class="db-dates-box">
+          <div class="db-date-col">
+            <span>📅 Pickup Date</span>
+            <strong>{{ booking.pickup_date }}</strong>
+          </div>
+          <div class="db-date-divider">→</div>
+          <div class="db-date-col">
+            <span>📅 Return Date</span>
+            <strong>{{ booking.return_date }}</strong>
+          </div>
+        </div>
+
+        <div class="db-price-box">
+          <div class="db-pr"><span>Duration</span><strong>{{ booking.total_days }} day{% if booking.total_days > 1 %}s{% endif %}</strong></div>
+          <div class="db-pr"><span>Rate</span><strong>৳{{ "%.0f"|format(booking.price_per_day) }} × {{ booking.total_days }}</strong></div>
+          <div class="db-pr total-row"><span>Total Amount</span><strong>৳{{ "%.0f"|format(booking.total_price) }}</strong></div>
+        </div>
+
+        {% if booking.note %}
+        <div class="db-note">
+          <span>📝 Note:</span> {{ booking.note }}
+        </div>
+        {% endif %}
+
+        <!-- Admin Status Update -->
+        {% if session.user_role == 'admin' %}
+        <div class="db-admin-actions">
+          <h4>Update Status</h4>
+          <form method="POST" action="{{ url_for('update_booking_status', bid=booking.id) }}" class="status-update-form">
+            <select name="status">
+              {% for s in ['pending','confirmed','cancelled','completed'] %}
+                <option value="{{ s }}" {% if booking.status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="btn-primary">Update</button>
+          </form>
+        </div>
+        {% endif %}
+
+        <!-- Customer Cancel -->
+        {% if session.user_role != 'admin' and booking.status in ('pending','confirmed') %}
+        <div class="db-cancel-box">
+          <form method="POST" action="{{ url_for('cancel_booking', bid=booking.id) }}"
+                onsubmit="return confirm('Are you sure you want to cancel this booking?')">
+            <button type="submit" class="btn-cancel-lg">✕ Cancel Booking</button>
+          </form>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
