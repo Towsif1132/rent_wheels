@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard | RentWheels{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+  <div class="dash-welcome">
+    <h1>Welcome, {{ name }}! 👋</h1>
+    <p>You are logged in as <span class="badge-{{ role }}">{{ role }}</span></p>
+  </div>
+  <div class="dash-stats">
+    <div class="stat-card"><span class="stat-icon">🚗</span><div><strong>{{ total_vehicles }}</strong><p>Total Vehicles</p></div></div>
+    <div class="stat-card"><span class="stat-icon">✅</span><div><strong>{{ available }}</strong><p>Available</p></div></div>
+    <div class="stat-card"><span class="stat-icon">📋</span><div><strong>{{ total_bookings }}</strong><p>Total Bookings</p></div></div>
+    <div class="stat-card"><span class="stat-icon">👥</span><div><strong>{{ total_users }}</strong><p>Users</p></div></div>
+  </div>
+  <div class="dash-grid">
+    {% if role == 'admin' %}
+      <a href="{{ url_for('admin_vehicles') }}" class="dash-card"><span>🚘</span><h3>Manage Vehicles</h3><p>Add, edit or remove vehicles.</p></a>
+      <a href="{{ url_for('admin_bookings') }}" class="dash-card"><span>📋</span><h3>Manage Bookings</h3><p>View and update all bookings.</p></a>
+      <a href="{{ url_for('add_vehicle') }}" class="dash-card"><span>➕</span><h3>Add Vehicle</h3><p>Add a new vehicle to fleet.</p></a>
+    {% else %}
+      <a href="{{ url_for('browse_vehicles') }}" class="dash-card"><span>🔍</span><h3>Browse Vehicles</h3><p>Find and book your perfect ride.</p></a>
+      <a href="{{ url_for('my_bookings') }}" class="dash-card"><span>📅</span><h3>My Bookings</h3><p>View your reservations.</p></a>
+    {% endif %}
+    <div class="dash-card"><span>💳</span><h3>Payments</h3><p>Module 3 — Coming soon.</p></div>
+  </div>
+</div>
+{% endblock %}
