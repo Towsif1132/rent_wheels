@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Manage Bookings | Admin{% endblock %}
+{% block content %}
+
+<div class="admin-container">
+  <div class="admin-header">
+    <div>
+      <h1>📋 Booking Management</h1>
+      <p>View, confirm, cancel and manage all customer bookings</p>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="booking-stats">
+    <div class="bstat-card"><span class="bstat-icon">📊</span><strong>{{ total }}</strong><p>Total</p></div>
+    <div class="bstat-card pending"><span class="bstat-icon">⏳</span><strong>{{ pending }}</strong><p>Pending</p></div>
+    <div class="bstat-card confirmed"><span class="bstat-icon">✅</span><strong>{{ confirmed }}</strong><p>Confirmed</p></div>
+    <div class="bstat-card completed"><span class="bstat-icon">🏁</span><strong>{{ completed }}</strong><p>Completed</p></div>
+    <div class="bstat-card cancelled"><span class="bstat-icon">❌</span><strong>{{ cancelled }}</strong><p>Cancelled</p></div>
+  </div>
+
+  <!-- FILTERS -->
+  <form method="GET" class="admin-filter-form">
+    <input type="text" name="search" value="{{ search }}" placeholder="🔍 Search customer or vehicle...">
+    <select name="status" onchange="this.form.submit()">
+      <option value="">All Statuses</option>
+      {% for s in ['pending','confirmed','completed','cancelled'] %}
+        <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s|capitalize }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn-primary">Search</button>
+    {% if search or status_filter %}
+      <a href="{{ url_for('admin_bookings') }}" class="btn-outline">Clear</a>
+    {% endif %}
+  </form>
+
+  <!-- TABLE -->
+  {% if bookings %}
+  <div class="table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Vehicle</th>
+          <th>Customer</th>
+          <th>Pickup</th>
+          <th>Return</th>
+          <th>Days</th>
+          <th>Total (৳)</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bookings %}
+        <tr>
+          <td><strong>#{{ b.id }}</strong></td>
+          <td>
+            <div class="table-vehicle-cell">
+              <img src="{{ url_for('static', filename='uploads/' + b.image) }}"
+                   onerror="this.src='{{ url_for('static', filename='placeholder.jpg') }}'"
+                   class="table-thumb" alt="{{ b.vehicle_name }}">
+              <span>{{ b.vehicle_name }}<br><small>{{ b.brand }}</small></span>
+            </div>
+          </td>
+          <td>{{ b.customer_name }}<br><small>{{ b.email }}</small></td>
+          <td>{{ b.pickup_date }}</td>
+          <td>{{ b.return_date }}</td>
+          <td>{{ b.total_days }}</td>
+          <td><strong>৳{{ "%.0f"|format(b.total_price) }}</strong></td>
+          <td><span class="booking-status-badge bs-{{ b.status }}">{{ b.status|capitalize }}</span></td>
+          <td class="action-btns">
+            <a href="{{ url_for('booking_detail', bid=b.id) }}" class="btn-view" title="View">👁</a>
+            <!-- Quick status update -->
+            <form method="POST" action="{{ url_for('update_booking_status', bid=b.id) }}" style="display:inline">
+              <select name="status" onchange="this.form.submit()" class="quick-status-select">
+                {% for s in ['pending','confirmed','completed','cancelled'] %}
+                  <option value="{{ s }}" {% if b.status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+                {% endfor %}
+              </select>
+            </form>
+            <form method="POST" action="{{ url_for('delete_booking', bid=b.id) }}"
+                  onsubmit="return confirm('Delete Booking #{{ b.id }}?')" style="display:inline">
+              <button type="submit" class="btn-delete-sm" title="Delete">🗑</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <span>📭</span>
+    <h3>No bookings found</h3>
+    <p>No bookings match your current filter.</p>
+    <a href="{{ url_for('admin_bookings') }}" class="btn-primary">View All</a>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}
