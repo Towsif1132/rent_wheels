@@ -3,7 +3,7 @@ body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f4f6f9;
 a{text-decoration:none;color:inherit;}
 main{flex:1;}
 
-/* NAVBAR */
+
 .navbar{display:flex;justify-content:space-between;align-items:center;padding:14px 40px;background:#1a1a2e;color:#fff;box-shadow:0 2px 12px rgba(0,0,0,.35);position:sticky;top:0;z-index:100;}
 .logo{font-size:1.35rem;font-weight:800;color:#fff;}
 .nav-links{display:flex;align-items:center;gap:20px;}
@@ -13,7 +13,7 @@ main{flex:1;}
 .badge-admin{background:#e94560;color:#fff;font-size:.7rem;padding:2px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;}
 .badge-customer{background:#0f3460;color:#fff;font-size:.7rem;padding:2px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;}
 
-/* BUTTONS */
+
 .btn-primary{background:#e94560;color:#fff!important;padding:9px 22px;border-radius:7px;font-weight:600;font-size:.92rem;border:none;cursor:pointer;transition:background .2s,transform .1s;display:inline-block;}
 .btn-primary:hover{background:#c73652;}
 .btn-outline{background:transparent;color:#ccc!important;padding:8px 20px;border-radius:7px;border:1.5px solid #555;font-weight:600;font-size:.92rem;cursor:pointer;transition:all .2s;display:inline-block;}
@@ -25,7 +25,7 @@ main{flex:1;}
 .btn-edit:hover{background:#d97706;}
 .btn-disabled{background:#ccc;color:#888;padding:13px 32px;border-radius:7px;font-size:1rem;border:none;cursor:not-allowed;}
 
-/* ALERTS */
+
 .flash-wrapper{padding:0 40px;margin-top:12px;}
 .alert{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-radius:8px;font-size:.9rem;font-weight:500;margin-bottom:8px;}
 .alert-success{background:#d4edda;color:#155724;border-left:4px solid #28a745;}
@@ -33,12 +33,12 @@ main{flex:1;}
 .alert-close{cursor:pointer;opacity:.6;}
 .alert-close:hover{opacity:1;}
 
-/* PAGE HERO */
+
 .page-hero{text-align:center;padding:60px 20px 40px;background:linear-gradient(135deg,#1a1a2e,#0f3460);color:#fff;}
 .page-hero h1{font-size:2.4rem;font-weight:800;margin-bottom:10px;}
 .page-hero p{font-size:1.05rem;color:#aac4e0;}
 
-/* FILTER BAR */
+
 .filter-bar{background:#fff;padding:20px 40px;box-shadow:0 2px 8px rgba(0,0,0,.07);border-bottom:1px solid #eee;}
 .filter-form{display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
 .filter-group input,.filter-group select{padding:9px 14px;border:1.5px solid #ddd;border-radius:7px;font-size:.92rem;background:#fafafa;transition:border .2s;}
@@ -48,7 +48,7 @@ main{flex:1;}
 .price-range input{width:120px;}
 .results-header{padding:14px 40px;color:#777;font-size:.9rem;background:#fff;border-bottom:1px solid #eee;}
 
-/* VEHICLE GRID */
+
 .vehicle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;padding:32px 40px;}
 .vehicle-card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);transition:transform .2s,box-shadow .2s;}
 .vehicle-card:hover{transform:translateY(-4px);box-shadow:0 8px 28px rgba(0,0,0,.13);}
@@ -68,7 +68,7 @@ main{flex:1;}
 .price{font-size:1.3rem;font-weight:800;color:#e94560;}
 .price span{font-size:.8rem;color:#999;font-weight:400;}
 
-/* VEHICLE DETAIL */
+
 .detail-container{max-width:1000px;margin:36px auto;padding:0 24px;}
 .back-link{color:#e94560;font-size:.9rem;font-weight:600;display:inline-block;margin-bottom:20px;}
 .back-link:hover{text-decoration:underline;}
@@ -94,18 +94,15 @@ main{flex:1;}
 .detail-desc p{color:#555;line-height:1.6;font-size:.95rem;}
 .detail-actions{display:flex;gap:12px;flex-wrap:wrap;}
 
-/* ═══ MODULE 2: BOOKING STYLES ═══════════════════ */
-
-/* Rental Type Toggle */
 .rental-toggle{display:flex;gap:0;margin-bottom:20px;border-radius:8px;overflow:hidden;border:1.5px solid #e0e0e0;}
 .toggle-btn{flex:1;padding:11px;background:#f8f9fb;border:none;cursor:pointer;font-size:.92rem;font-weight:600;color:#888;transition:all .2s;}
 .toggle-btn.active{background:#1a1a2e;color:#fff;}
 .toggle-btn:first-child{border-right:1.5px solid #e0e0e0;}
 
-/* Hourly time row */
+
 .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 
-/* Vehicle rate box */
+
 .bvc-rate-box{display:flex;align-items:center;gap:0;background:#f8f9fb;border-radius:10px;overflow:hidden;margin-top:12px;}
 .bvc-rate-item{flex:1;padding:12px 14px;text-align:center;}
 .bvc-rate-item span{display:block;font-size:.72rem;color:#999;text-transform:uppercase;font-weight:600;margin-bottom:4px;}
@@ -134,14 +131,14 @@ main{flex:1;}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#e94560;outline:none;background:#fff;}
 .form-group textarea{resize:vertical;font-family:inherit;}
 
-/* Price Summary Box */
+
 .price-summary{background:linear-gradient(135deg,#1a1a2e,#0f3460);color:#fff;border-radius:10px;padding:16px 18px;margin-bottom:16px;}
 .ps-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:.9rem;border-bottom:1px solid rgba(255,255,255,.1);}
 .ps-row:last-child{border-bottom:none;}
 .ps-row.total{margin-top:4px;padding-top:10px;}
 .ps-row.total strong{font-size:1.3rem;color:#e94560;}
 
-/* My Bookings */
+
 .page-container{max-width:1000px;margin:36px auto;padding:0 24px;}
 .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;}
 .page-header h1{font-size:1.8rem;color:#1a1a2e;margin-bottom:4px;}
@@ -178,7 +175,7 @@ main{flex:1;}
 .btn-cancel-sm{background:#f8d7da;color:#721c24;border:none;padding:6px 14px;border-radius:6px;font-size:.83rem;font-weight:600;cursor:pointer;}
 .btn-cancel-sm:hover{background:#f5c6cb;}
 
-/* Booking Detail */
+
 .detail-booking-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:24px;margin-top:20px;}
 .db-left{display:flex;flex-direction:column;gap:18px;}
 .db-card{background:#fff;border-radius:12px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,.08);}
@@ -212,7 +209,7 @@ main{flex:1;}
 .btn-cancel-lg{width:100%;padding:12px;background:#f8d7da;color:#721c24;border:2px solid #f5c6cb;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;}
 .btn-cancel-lg:hover{background:#f5c6cb;}
 
-/* Admin Bookings */
+
 .booking-stats{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap;}
 .bstat-card{background:#fff;padding:16px 20px;border-radius:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.07);min-width:100px;flex:1;}
 .bstat-card strong{font-size:1.6rem;display:block;color:#1a1a2e;}
@@ -229,7 +226,7 @@ main{flex:1;}
 .table-vehicle-cell small{color:#888;display:block;}
 .quick-status-select{padding:5px 8px;border:1.5px solid #ddd;border-radius:6px;font-size:.8rem;cursor:pointer;}
 
-/* Admin Table & Common */
+
 .admin-container{max-width:1200px;margin:36px auto;padding:0 24px;}
 .admin-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;}
 .admin-header h1{font-size:1.8rem;color:#1a1a2e;margin-bottom:4px;}
@@ -259,7 +256,7 @@ main{flex:1;}
 .btn-edit-sm:hover{border-color:#f59e0b;background:#fffbeb;}
 .btn-delete-sm:hover{border-color:#e94560;background:#fdecea;}
 
-/* Form Page */
+
 .form-page{max-width:820px;margin:36px auto;padding:0 24px;}
 .form-card{background:#fff;border-radius:14px;padding:36px 40px;box-shadow:0 4px 20px rgba(0,0,0,.09);}
 .form-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;}
@@ -272,7 +269,7 @@ main{flex:1;}
 .img-preview-wrap{margin-top:10px;}
 .img-preview-wrap img{max-width:200px;max-height:140px;border-radius:8px;border:2px solid #e94560;}
 
-/* Dashboard */
+
 .dashboard-container{max-width:960px;margin:40px auto;padding:0 24px;}
 .dash-welcome{margin-bottom:28px;}
 .dash-welcome h1{font-size:1.9rem;color:#1a1a2e;margin-bottom:6px;}
@@ -289,7 +286,7 @@ main{flex:1;}
 .dash-card h3{margin:10px 0 6px;font-size:.98rem;color:#1a1a2e;}
 .dash-card p{font-size:.83rem;color:#999;line-height:1.5;}
 
-/* Auth */
+
 .auth-wrapper{display:flex;justify-content:center;align-items:center;min-height:calc(100vh - 66px);padding:40px 20px;background:linear-gradient(135deg,#1a1a2e,#0f3460);}
 .auth-container{background:#fff;padding:44px 40px;border-radius:16px;width:100%;max-width:460px;box-shadow:0 10px 40px rgba(0,0,0,.2);}
 .auth-container h2{font-size:1.8rem;color:#1a1a2e;margin-bottom:6px;}
@@ -300,16 +297,16 @@ main{flex:1;}
 .auth-switch a{color:#e94560;font-weight:600;}
 .error-text{color:#e94560;font-size:.84rem;margin-top:4px;}
 
-/* Empty State */
+
 .empty-state{text-align:center;padding:80px 20px;color:#999;}
 .empty-state span{font-size:4rem;display:block;margin-bottom:16px;}
 .empty-state h3{font-size:1.4rem;margin-bottom:8px;color:#555;}
 .empty-state p{margin-bottom:24px;}
 
-/* Footer */
+
 .footer{background:#1a1a2e;color:#666;text-align:center;padding:16px;font-size:.82rem;}
 
-/* Responsive */
+
 @media(max-width:768px){
   .navbar{padding:12px 18px;}
   .vehicle-grid,.filter-bar,.results-header,.flash-wrapper{padding-left:16px;padding-right:16px;}
