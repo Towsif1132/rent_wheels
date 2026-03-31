@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}{{ vehicle.name }} | RentWheels{% endblock %}
+{% block content %}
+<div class="detail-container">
+  <a href="{{ url_for('browse_vehicles') }}" class="back-link">← Back to Vehicles</a>
+  <div class="detail-grid">
+    <div class="detail-img-wrap">
+      <img src="{{ url_for('static', filename='uploads/' + vehicle.image) }}"
+           onerror="this.src='{{ url_for('static', filename='placeholder.jpg') }}'"
+           alt="{{ vehicle.name }}">
+      <span class="status-badge status-{{ vehicle.status }}">{{ vehicle.status }}</span>
+    </div>
+    <div class="detail-info">
+      <div class="detail-header">
+        <h1>{{ vehicle.name }}</h1>
+        <span class="category-tag">{{ vehicle.category }}</span>
+      </div>
+      <p class="detail-brand">by <strong>{{ vehicle.brand }}</strong></p>
+      <div class="detail-price">
+        <span class="big-price">৳{{ "%.0f"|format(vehicle.price_per_day) }}</span>
+        <span class="per-day">/ day</span>
+      </div>
+      <div class="spec-grid">
+        <div class="spec-item"><span class="spec-icon">🪑</span><span class="spec-label">Seats</span><span class="spec-val">{{ vehicle.seats }}</span></div>
+        <div class="spec-item"><span class="spec-icon">⛽</span><span class="spec-label">Fuel</span><span class="spec-val">{{ vehicle.fuel_type }}</span></div>
+        <div class="spec-item"><span class="spec-icon">⚙️</span><span class="spec-label">Transmission</span><span class="spec-val">{{ vehicle.transmission }}</span></div>
+        <div class="spec-item"><span class="spec-icon">📋</span><span class="spec-label">Status</span><span class="spec-val status-text-{{ vehicle.status }}">{{ vehicle.status|capitalize }}</span></div>
+      </div>
+      {% if vehicle.description %}
+      <div class="detail-desc"><h4>About this vehicle</h4><p>{{ vehicle.description }}</p></div>
+      {% endif %}
+      <div class="detail-actions">
+        {% if vehicle.status == 'available' %}
+          {% if session.user_id %}
+            <a href="{{ url_for('book_vehicle', vid=vehicle.id) }}" class="btn-primary btn-lg">🚗 Book Now</a>
+          {% else %}
+            <a href="{{ url_for('login') }}" class="btn-primary btn-lg">Login to Book</a>
+          {% endif %}
+        {% else %}
+          <button class="btn-disabled btn-lg" disabled>Not Available</button>
+        {% endif %}
+        {% if session.user_role == 'admin' %}
+          <a href="{{ url_for('edit_vehicle', vid=vehicle.id) }}" class="btn-edit btn-lg">✏️ Edit</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
