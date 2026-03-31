@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Vehicle | Admin{% endblock %}
+{% block content %}
+<div class="form-page">
+  <div class="form-card">
+    <div class="form-card-header">
+      <h2>{{ action }} Vehicle</h2>
+      <a href="{{ url_for('admin_vehicles') }}" class="btn-outline">← Back</a>
+    </div>
+    <form method="POST" enctype="multipart/form-data" id="vehicleForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Vehicle Name *</label>
+          <input type="text" name="name" value="{{ vehicle.name if vehicle else '' }}" placeholder="e.g. Corolla 2022" required>
+        </div>
+        <div class="form-group">
+          <label>Brand *</label>
+          <input type="text" name="brand" value="{{ vehicle.brand if vehicle else '' }}" placeholder="e.g. Toyota" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category *</label>
+          <select name="category" required>
+            <option value="">Select category</option>
+            {% for cat in ['Sedan','SUV','Hatchback','Pickup','Van','Motorcycle','Microbus','Truck'] %}
+              <option value="{{ cat }}" {% if vehicle and vehicle.category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Price per Day (৳) *</label>
+          <input type="number" name="price_per_day" value="{{ vehicle.price_per_day if vehicle else '' }}" placeholder="e.g. 2500" min="0" step="50" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price per Hour (৳) *</label>
+          <input type="number" name="price_per_hour" value="{{ vehicle.price_per_hour if vehicle else '' }}" placeholder="e.g. 300" min="0" step="10" required>
+          <small style="color:#888;font-size:.78rem;">Used for hourly bookings</small>
+        </div>
+        <div class="form-group"><!-- spacer --></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Seats *</label>
+          <select name="seats" required>
+            {% for s in [2,4,5,6,7,8,12,15] %}
+              <option value="{{ s }}" {% if vehicle and vehicle.seats == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Fuel Type *</label>
+          <select name="fuel_type" required>
+            {% for f in ['Petrol','Diesel','CNG','Electric','Hybrid'] %}
+              <option value="{{ f }}" {% if vehicle and vehicle.fuel_type == f %}selected{% endif %}>{{ f }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Transmission *</label>
+          <select name="transmission" required>
+            {% for t in ['Manual','Automatic'] %}
+              <option value="{{ t }}" {% if vehicle and vehicle.transmission == t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select name="status">
+            <option value="available" {% if not vehicle or vehicle.status == 'available' %}selected{% endif %}>Available</option>
+            <option value="unavailable" {% if vehicle and vehicle.status == 'unavailable' %}selected{% endif %}>Unavailable</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group full-width">
+        <label>Description</label>
+        <textarea name="description" rows="3" placeholder="Brief description...">{{ vehicle.description if vehicle else '' }}</textarea>
+      </div>
+      <div class="form-group full-width">
+        <label>Vehicle Image</label>
+        {% if vehicle and vehicle.image and vehicle.image != 'placeholder.jpg' %}
+        <div class="current-img-preview">
+          <img src="{{ url_for('static', filename='uploads/' + vehicle.image) }}" alt="Current">
+          <span>Current image (upload new to replace)</span>
+        </div>
+        {% endif %}
+        <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" id="imageInput">
+        <div id="imgPreview" class="img-preview-wrap" style="display:none">
+          <img id="previewImg" src="" alt="Preview">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary btn-lg">{% if action == 'Add' %}➕ Add Vehicle{% else %}💾 Save Changes{% endif %}</button>
+        <a href="{{ url_for('admin_vehicles') }}" class="btn-outline btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
