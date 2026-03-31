@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}My Bookings | RentWheels{% endblock %}
+{% block content %}
+
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>📋 My Bookings</h1>
+      <p>Track and manage all your vehicle reservations</p>
+    </div>
+    <a href="{{ url_for('browse_vehicles') }}" class="btn-primary">+ New Booking</a>
+  </div>
+
+  {% if bookings %}
+  <div class="booking-list">
+    {% for b in bookings %}
+    <div class="booking-card status-border-{{ b.status }}">
+      <div class="bc-img">
+        <img src="{{ url_for('static', filename='uploads/' + b.image) }}"
+             onerror="this.src='{{ url_for('static', filename='placeholder.jpg') }}'"
+             alt="{{ b.vehicle_name }}">
+      </div>
+      <div class="bc-info">
+        <div class="bc-top">
+          <div>
+            <span class="category-tag">{{ b.category }}</span>
+            <h3>{{ b.vehicle_name }}</h3>
+            <p class="bc-brand">{{ b.brand }}</p>
+          </div>
+          <div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+            <span class="booking-status-badge bs-{{ b.status }}">{{ b.status|capitalize }}</span>
+            <span class="rental-type-badge rt-{{ b.rental_type if b.rental_type else 'daily' }}">
+              {{ '⏱ Hourly' if b.rental_type == 'hourly' else '📅 Daily' }}
+            </span>
+          </div>
+        </div>
+        <div class="bc-dates">
+          {% if b.rental_type == 'hourly' %}
+          <div class="bc-date-item">
+            <span class="bc-label">Date</span>
+            <strong>{{ b.pickup_date }}</strong>
+          </div>
+          <div class="bc-arrow">⏱</div>
+          <div class="bc-date-item">
+            <span class="bc-label">Time</span>
+            <strong>{{ b.pickup_time }} → {{ b.return_time }}</strong>
+          </div>
+          <div class="bc-date-item">
+            <span class="bc-label">Duration</span>
+            <strong>{{ b.total_hours }} hr{% if b.total_hours > 1 %}s{% endif %}</strong>
+          </div>
+          {% else %}
+          <div class="bc-date-item">
+            <span class="bc-label">Pickup</span>
+            <strong>{{ b.pickup_date }}</strong>
+          </div>
+          <div class="bc-arrow">→</div>
+          <div class="bc-date-item">
+            <span class="bc-label">Return</span>
+            <strong>{{ b.return_date }}</strong>
+          </div>
+          <div class="bc-date-item">
+            <span class="bc-label">Duration</span>
+            <strong>{{ b.total_days }} day{% if b.total_days > 1 %}s{% endif %}</strong>
+          </div>
+          {% endif %}
+          <div class="bc-date-item highlight">
+            <span class="bc-label">Total</span>
+            <strong>৳{{ "%.0f"|format(b.total_price) }}</strong>
+          </div>
+        </div>
+        <div class="bc-footer">
+          <span class="bc-id">Booking #{{ b.id }} — {{ b.created_at.strftime('%d %b %Y') }}</span>
+          <div class="bc-actions">
+            <a href="{{ url_for('booking_detail', bid=b.id) }}" class="btn-view-sm">View Details</a>
+            {% if b.status in ('pending', 'confirmed') %}
+            <form method="POST" action="{{ url_for('cancel_booking', bid=b.id) }}"
+                  onsubmit="return confirm('Cancel Booking #{{ b.id }}?')">
+              <button type="submit" class="btn-cancel-sm">Cancel</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <span>📭</span>
+    <h3>No bookings yet</h3>
+    <p>Browse vehicles and make your first booking!</p>
+    <a href="{{ url_for('browse_vehicles') }}" class="btn-primary">Browse Vehicles</a>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}
