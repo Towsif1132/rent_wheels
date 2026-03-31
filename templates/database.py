@@ -1,12 +1,11 @@
 import pymysql
 import pymysql.cursors
 
-# ── XAMPP MySQL Config ─────────────────────────────
 DB_CONFIG = {
     'host':     'localhost',
     'port':     3306,
     'user':     'root',
-    'password': '',           # XAMPP default is empty password
+    'password': '',           
     'database': 'vehicle_rental',
     'cursorclass': pymysql.cursors.DictCursor,
     'charset':  'utf8mb4'
@@ -16,7 +15,7 @@ def get_db():
     return pymysql.connect(**DB_CONFIG)
 
 def init_db():
-    # First connect without db to create it if not exists
+    
     cfg = {k: v for k, v in DB_CONFIG.items() if k != 'database'}
     cfg['cursorclass'] = pymysql.cursors.DictCursor
     conn = pymysql.connect(**cfg)
@@ -25,7 +24,7 @@ def init_db():
     cur.execute("CREATE DATABASE IF NOT EXISTS vehicle_rental CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
     cur.execute("USE vehicle_rental")
 
-    # USERS
+    
     cur.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id         INT          AUTO_INCREMENT PRIMARY KEY,
@@ -38,7 +37,7 @@ def init_db():
         ) ENGINE=InnoDB
     ''')
 
-    # VEHICLES
+   
     cur.execute('''
         CREATE TABLE IF NOT EXISTS vehicles (
             id              INT           AUTO_INCREMENT PRIMARY KEY,
@@ -57,14 +56,14 @@ def init_db():
         ) ENGINE=InnoDB
     ''')
 
-    # Add price_per_hour column if it doesn't exist (for existing databases)
+    
     try:
         cur.execute("ALTER TABLE vehicles ADD COLUMN price_per_hour DECIMAL(10,2) NOT NULL DEFAULT 0 AFTER price_per_day")
         conn.commit()
     except:
-        pass  # Column already exists
+        pass  
 
-    # BOOKINGS
+   
     cur.execute('''
         CREATE TABLE IF NOT EXISTS bookings (
             id           INT           AUTO_INCREMENT PRIMARY KEY,
@@ -86,7 +85,7 @@ def init_db():
         ) ENGINE=InnoDB
     ''')
 
-    # Add new columns to existing bookings table if they don't exist
+    
     for col, definition in [
         ('rental_type', "ENUM('daily','hourly') NOT NULL DEFAULT 'daily' AFTER vehicle_id"),
         ('pickup_time', "TIME DEFAULT NULL AFTER pickup_date"),
@@ -97,7 +96,7 @@ def init_db():
             cur.execute(f"ALTER TABLE bookings ADD COLUMN {col} {definition}")
             conn.commit()
         except:
-            pass  # Column already exists
+            pass  
 
     conn.commit()
     cur.close()
