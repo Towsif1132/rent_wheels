@@ -259,11 +259,9 @@ def toggle_status(vid):
     cur.close(); conn.close()
     return redirect(url_for('admin_vehicles'))
 
-# ════════════════════════════════════════════════
-#  MODULE 2 — BOOKING MANAGEMENT
-# ════════════════════════════════════════════════
+#module 2
 
-# ── Customer: Create Booking ─────────────────────
+"""for booking vehicle"""
 @app.route('/book/<int:vid>', methods=['GET', 'POST'])
 @login_required
 def book_vehicle(vid):

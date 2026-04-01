@@ -1,5 +1,6 @@
 import pymysql
 import pymysql.cursors
+import hashlib
 
 DB_CONFIG = {
     'host':     'localhost',
@@ -13,6 +14,10 @@ DB_CONFIG = {
 
 def get_db():
     return pymysql.connect(**DB_CONFIG)
+
+
+def _hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def init_db():
     
@@ -98,6 +103,47 @@ def init_db():
         except:
             pass
 
+    # Seed default admin user once.
+    cur.execute("SELECT id FROM users WHERE email=%s", ('admin@rentwheels.com',))
+    admin = cur.fetchone()
+    if not admin:
+        cur.execute(
+            '''
+            INSERT INTO users (name, email, phone, password, role)
+            VALUES (%s, %s, %s, %s, %s)
+            ''',
+            (
+                'System Admin',
+                'admin@rentwheels.com',
+                '01700000000',
+                _hash_password('admin123'),
+                'admin',
+            ),
+        )
+
+    # Seed starter vehicles only for a brand-new vehicles table.
+    cur.execute("SELECT COUNT(*) AS c FROM vehicles")
+    vehicle_count = cur.fetchone()['c']
+    if vehicle_count == 0:
+        cur.executemany(
+            '''
+            INSERT INTO vehicles
+            (name, brand, category, price_per_day, price_per_hour, seats, fuel_type, transmission, description, status, image)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ''',
+            [
+                ('Corolla 2022', 'Toyota', 'Sedan', 4500.00, 550.00, 5, 'Petrol', 'Automatic', 'Reliable family sedan with great mileage.', 'available', 'placeholder.jpg'),
+                ('Civic RS', 'Honda', 'Sedan', 5000.00, 650.00, 5, 'Petrol', 'Automatic', 'Sporty sedan with premium interior.', 'available', 'placeholder.jpg'),
+                ('X5', 'BMW', 'SUV', 12000.00, 1500.00, 7, 'Diesel', 'Automatic', 'Luxury SUV for long trips and events.', 'available', 'placeholder.jpg'),
+                ('Hiace', 'Toyota', 'Microbus', 8500.00, 1000.00, 12, 'Diesel', 'Manual', 'Best for group travel and tours.', 'available', 'placeholder.jpg'),
+            ],
+        )
+
     conn.commit()
     cur.close()
     conn.close()
+
+
+if __name__ == '__main__':
+    init_db()
+    print('Database initialized and seed data verified.')
