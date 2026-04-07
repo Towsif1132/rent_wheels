@@ -29,6 +29,7 @@
           </div>
           <div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
             <span class="booking-status-badge bs-{{ b.status }}">{{ b.status|capitalize }}</span>
+            <span class="booking-status-badge bs-{{ b.payment_status|lower if b.payment_status else 'pending' }}">Pay: {{ 'Completed' if b.payment_status == 'Completed' else b.payment_status if b.payment_status else 'Pending' }}</span>
             <span class="rental-type-badge rt-{{ b.rental_type if b.rental_type else 'daily' }}">
               {{ '⏱ Hourly' if b.rental_type == 'hourly' else '📅 Daily' }}
             </span>

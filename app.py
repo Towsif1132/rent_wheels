@@ -13,7 +13,7 @@ ALLOWED_EXT      = {'png', 'jpg', 'jpeg', 'webp'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# ── Helpers ───────────────────────────────────────
+
 def allowed_file(f):
     return '.' in f and f.rsplit('.', 1)[1].lower() in ALLOWED_EXT
 
@@ -45,9 +45,7 @@ def admin_required(f):
 def setup():
     init_db()
 
-# ════════════════════════════════════════════════
-#  AUTH
-# ════════════════════════════════════════════════
+"""authentication"""
 @app.route('/')
 def index():
     return redirect(url_for('browse_vehicles'))
@@ -114,9 +112,9 @@ def dashboard():
                            total_vehicles=tv, available=av,
                            total_users=tu, total_bookings=tb)
 
-# ════════════════════════════════════════════════
-#  MODULE 1 — VEHICLE BROWSING (CUSTOMER)
-# ════════════════════════════════════════════════
+
+"""BROWSING VEHICLE"""
+
 @app.route('/vehicles')
 def browse_vehicles():
     conn = get_db(); cur = conn.cursor()
@@ -159,9 +157,7 @@ def vehicle_detail(vid):
         return redirect(url_for('browse_vehicles'))
     return render_template('vehicle_detail.html', vehicle=v, today=date.today().isoformat())
 
-# ════════════════════════════════════════════════
-#  MODULE 1 — VEHICLE MANAGEMENT (ADMIN)
-# ════════════════════════════════════════════════
+"""vehicle management"""
 @app.route('/admin/vehicles')
 @admin_required
 def admin_vehicles():
@@ -176,6 +172,8 @@ def admin_vehicles():
     cur.close(); conn.close()
     return render_template('admin_vehicles.html', vehicles=vehicles, search=search)
 
+
+"""add vehicles"""
 @app.route('/admin/vehicles/add', methods=['GET', 'POST'])
 @admin_required
 def add_vehicle():
@@ -201,6 +199,8 @@ def add_vehicle():
         return redirect(url_for('admin_vehicles'))
     return render_template('vehicle_form.html', vehicle=None, action='Add')
 
+
+"""update vehicles"""
 @app.route('/admin/vehicles/edit/<int:vid>', methods=['GET', 'POST'])
 @admin_required
 def edit_vehicle(vid):
@@ -259,7 +259,9 @@ def toggle_status(vid):
     cur.close(); conn.close()
     return redirect(url_for('admin_vehicles'))
 
-#module 2
+
+
+"""module 2"""
 
 """for booking vehicle"""
 @app.route('/book/<int:vid>', methods=['GET', 'POST'])
@@ -285,7 +287,6 @@ def book_vehicle(vid):
             cur.close(); conn.close()
             return render_template('book_vehicle.html', vehicle=vehicle, today=date.today().isoformat())
 
-        # ── HOURLY BOOKING ───────────────────────────
         if rental_type == 'hourly':
             pickup_time_str = request.form.get('pickup_time', '')
             return_time_str = request.form.get('return_time', '')
@@ -309,7 +310,7 @@ def book_vehicle(vid):
                 cur.close(); conn.close()
                 return render_template('book_vehicle.html', vehicle=vehicle, today=date.today().isoformat())
 
-            # Check hourly conflict on same date
+            
             cur.execute('''SELECT id FROM bookings
                 WHERE vehicle_id=%s AND status IN ('pending','confirmed')
                 AND rental_type='hourly' AND pickup_date=%s
@@ -322,7 +323,7 @@ def book_vehicle(vid):
 
             price_per_hour = float(vehicle.get('price_per_hour') or 0)
             if price_per_hour <= 0:
-                # fallback: divide daily rate by 8
+                
                 price_per_hour = round(float(vehicle['price_per_day']) / 8, 2)
 
             total_price = total_hours * price_per_hour
@@ -333,7 +334,7 @@ def book_vehicle(vid):
                 (session['user_id'], vid, pickup_str, pickup_time_str,
                  pickup_str, return_time_str, total_hours, total_price, note))
 
-        # ── DAILY BOOKING ────────────────────────────
+    
         else:
             return_str  = request.form['return_date']
             return_date = datetime.strptime(return_str, '%Y-%m-%d').date()
@@ -343,7 +344,7 @@ def book_vehicle(vid):
                 cur.close(); conn.close()
                 return render_template('book_vehicle.html', vehicle=vehicle, today=date.today().isoformat())
 
-            # Check daily conflict
+           
             cur.execute('''SELECT id FROM bookings
                 WHERE vehicle_id=%s AND status IN ('pending','confirmed')
                 AND rental_type='daily'
@@ -363,17 +364,64 @@ def book_vehicle(vid):
                 (session['user_id'], vid, pickup_str, return_str, total_days, total_price, note))
 
         booking_id = cur.lastrowid
-        # Mark vehicle as unavailable
+        
         cur.execute("UPDATE vehicles SET status='unavailable' WHERE id=%s", (vid,))
         conn.commit(); cur.close(); conn.close()
 
-        flash(f'Booking #{booking_id} placed successfully! Awaiting confirmation.', 'success')
-        return redirect(url_for('my_bookings'))
+        flash(f'Booking #{booking_id} placed! Please complete the simulated payment to confirm.', 'success')
+        return redirect(url_for('payment_checkout', bid=booking_id))
 
     cur.close(); conn.close()
     return render_template('book_vehicle.html', vehicle=vehicle, today=date.today().isoformat())
 
-# ── Customer: My Bookings ────────────────────────
+"""Payment Checkout"""
+@app.route('/bookings/<int:bid>/payment', methods=['GET', 'POST'])
+@login_required
+def payment_checkout(bid):
+    conn = get_db(); cur = conn.cursor()
+    cur.execute('''SELECT b.*, v.name AS vehicle_name, v.image, v.brand, v.category 
+                   FROM bookings b JOIN vehicles v ON b.vehicle_id = v.id 
+                   WHERE b.id=%s AND b.user_id=%s''', (bid, session['user_id']))
+    booking = cur.fetchone()
+    
+    if not booking:
+        flash('Booking not found or access denied.', 'error')
+        cur.close(); conn.close()
+        return redirect(url_for('my_bookings'))
+        
+    if booking.get('payment_status') == 'Completed':
+        flash('Payment has already been processed for this booking.', 'info')
+        cur.close(); conn.close()
+        return redirect(url_for('booking_detail', bid=bid))
+
+    if request.method == 'POST':
+        payment_method = request.form.get('payment_method', 'Cash on Delivery')
+        cur.execute("UPDATE bookings SET payment_method=%s, payment_status='Completed' WHERE id=%s", (payment_method, bid))
+        conn.commit()
+        cur.close(); conn.close()
+        return redirect(url_for('payment_thank_you', bid=bid))
+
+    cur.close(); conn.close()
+    return render_template('payment_checkout.html', booking=booking)
+
+"""A thank you message for customer"""
+@app.route('/bookings/<int:bid>/thank-you')
+@login_required
+def payment_thank_you(bid):
+    conn = get_db(); cur = conn.cursor()
+    cur.execute('''SELECT b.*, v.name AS vehicle_name 
+                   FROM book ings b JOIN vehicles v ON b.vehicle_id = v.id 
+                   WHERE b.id=%s AND b.user_id=%s''', (bid, session['user_id']))
+    booking = cur.fetchone()
+    cur.close(); conn.close()
+    
+    if not booking:
+        flash('Booking not found.', 'error')
+        return redirect(url_for('my_bookings'))
+        
+    return render_template('payment_thank_you.html', booking=booking)
+
+# Customer  Bookings 
 @app.route('/my-bookings')
 @login_required
 def my_bookings():
@@ -386,7 +434,7 @@ def my_bookings():
     cur.close(); conn.close()
     return render_template('my_bookings.html', bookings=bookings)
 
-# ── Customer: Cancel Booking ─────────────────────
+"""Cancel Booking """
 @app.route('/bookings/cancel/<int:bid>', methods=['POST'])
 @login_required
 def cancel_booking(bid):
@@ -395,7 +443,6 @@ def cancel_booking(bid):
     booking = cur.fetchone()
     if booking and booking['status'] in ('pending', 'confirmed'):
         cur.execute("UPDATE bookings SET status='cancelled' WHERE id=%s", (bid,))
-        # Free up the vehicle
         cur.execute("UPDATE vehicles SET status='available' WHERE id=%s", (booking['vehicle_id'],))
         conn.commit()
         flash(f'Booking #{bid} cancelled successfully.', 'success')
@@ -404,7 +451,7 @@ def cancel_booking(bid):
     cur.close(); conn.close()
     return redirect(url_for('my_bookings'))
 
-# ── Customer: Booking Detail ─────────────────────
+# Customer: Booking Detail
 @app.route('/bookings/<int:bid>')
 @login_required
 def booking_detail(bid):
@@ -429,7 +476,7 @@ def booking_detail(bid):
 
     return render_template('booking_detail.html', booking=booking)
 
-# ── Admin: All Bookings ──────────────────────────
+# Admin: All Bookings
 @app.route('/admin/bookings')
 @admin_required
 def admin_bookings():
@@ -453,7 +500,6 @@ def admin_bookings():
     cur.execute(q, p)
     bookings = cur.fetchall()
 
-    # Stats
     cur.execute("SELECT COUNT(*) AS c FROM bookings")
     total = cur.fetchone()['c']
     cur.execute("SELECT COUNT(*) AS c FROM bookings WHERE status='pending'")
@@ -471,7 +517,7 @@ def admin_bookings():
                            cancelled=cancelled, completed=completed,
                            status_filter=status_filter, search=search)
 
-# ── Admin: Update Booking Status ─────────────────
+# Admin: Update Booking Status 
 @app.route('/admin/bookings/update/<int:bid>', methods=['POST'])
 @admin_required
 def update_booking_status(bid):
@@ -498,7 +544,7 @@ def update_booking_status(bid):
     cur.close(); conn.close()
     return redirect(url_for('admin_bookings'))
 
-# ── Admin: Delete Booking ────────────────────────
+#Admin: Delete Booking 
 @app.route('/admin/bookings/delete/<int:bid>', methods=['POST'])
 @admin_required
 def delete_booking(bid):

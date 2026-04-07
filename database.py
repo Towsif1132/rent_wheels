@@ -96,6 +96,8 @@ def init_db():
         ('pickup_time', "TIME DEFAULT NULL AFTER pickup_date"),
         ('return_time', "TIME DEFAULT NULL AFTER return_date"),
         ('total_hours', "INT DEFAULT 0 AFTER total_days"),
+        ('payment_method', "VARCHAR(50) DEFAULT NULL AFTER status"),
+        ('payment_status', "ENUM('Pending', 'Completed', 'Failed') NOT NULL DEFAULT 'Pending' AFTER payment_method"),
     ]:
         try:
             cur.execute(f"ALTER TABLE bookings ADD COLUMN {col} {definition}")
@@ -103,7 +105,7 @@ def init_db():
         except:
             pass
 
-    # Seed default admin user once.
+   
     cur.execute("SELECT id FROM users WHERE email=%s", ('admin@rentwheels.com',))
     admin = cur.fetchone()
     if not admin:
@@ -121,7 +123,7 @@ def init_db():
             ),
         )
 
-    # Seed starter vehicles only for a brand-new vehicles table.
+    
     cur.execute("SELECT COUNT(*) AS c FROM vehicles")
     vehicle_count = cur.fetchone()['c']
     if vehicle_count == 0:
