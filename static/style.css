@@ -817,35 +817,33 @@ body{
 .logo{
   display:flex;
   align-items:center;
-  gap:12px;
+  gap:14px;
   color:var(--rw-text);
 }
 
 .logo-mark{
-  width:34px;
-  height:34px;
-  border-radius:10px;
+  width:56px;
+  height:56px;
+  border-radius:16px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:.7rem;
-  font-weight:800;
-  letter-spacing:.3px;
+  font-size:1.45rem;
   color:#fff;
-  background:linear-gradient(135deg,#5e67ff,#ff4f7d);
-  box-shadow:0 10px 22px rgba(88,102,255,.4);
+  background:linear-gradient(135deg,#ff4f7d,#7d68ff);
+  box-shadow:0 14px 30px rgba(255,79,125,.34);
 }
 
 .logo-text{
   font-family:'Sora',sans-serif;
-  font-size:1.7rem;
-  font-weight:700;
+  font-size:2.8rem;
+  font-weight:800;
   line-height:1;
   color:#ffffff;
 }
 
 .logo-text strong{
-  color:var(--rw-accent);
+  color:#ff3f73;
   font-weight:800;
 }
 
@@ -1063,7 +1061,7 @@ body{
   }
 
   .logo-text{
-    font-size:1.45rem;
+    font-size:2.2rem;
   }
 
   .nav-links{
@@ -1116,5 +1114,122 @@ body{
 
   .vehicle-header h3{
     font-size:1.45rem;
+  }
+}
+
+/* Final responsive pass */
+@media(max-width:1200px){
+  .dashboard-container{
+    max-width:100%;
+    padding:0 18px;
+  }
+
+  .admin-history-table{
+    min-width:680px;
+  }
+}
+
+@media(max-width:980px){
+  .logo-mark{
+    width:48px;
+    height:48px;
+    border-radius:14px;
+    font-size:1.2rem;
+  }
+
+  .logo-text{
+    font-size:2rem;
+  }
+
+  .dashboard-container{
+    margin:26px auto;
+  }
+
+  .admin-dash-stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .admin-dash-actions{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    max-width:none;
+  }
+}
+
+@media(max-width:768px){
+  .navbar{
+    padding:10px 14px;
+  }
+
+  .logo{
+    gap:10px;
+  }
+
+  .logo-mark{
+    width:40px;
+    height:40px;
+    border-radius:12px;
+    font-size:1rem;
+  }
+
+  .logo-text{
+    font-size:1.45rem;
+  }
+
+  .dashboard-container{
+    margin:20px auto;
+    padding:0 14px;
+  }
+
+  .admin-dash-welcome h1{
+    font-size:1.6rem;
+    line-height:1.2;
+  }
+
+  .admin-dash-welcome p{
+    font-size:.92rem;
+  }
+
+  .admin-dash-stats,
+  .admin-dash-actions{
+    grid-template-columns:1fr;
+    gap:12px;
+  }
+
+  .admin-stat-card,
+  .admin-action-card{
+    min-height:0;
+  }
+
+  .admin-history-head{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+  }
+
+  .admin-history-head .btn-outline{
+    width:100%;
+    text-align:center;
+  }
+
+  .admin-history-table{
+    min-width:620px;
+  }
+}
+
+@media(max-width:520px){
+  .logo-text{
+    font-size:1.2rem;
+  }
+
+  .admin-history-head h2{
+    font-size:1.05rem;
+  }
+
+  .admin-stat-card strong{
+    font-size:1.55rem;
+  }
+
+  .admin-action-card h3{
+    font-size:1.2rem;
   }
 }
