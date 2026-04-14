@@ -4,11 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}RentWheels{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <nav class="navbar">
-    <a href="{{ url_for('browse_vehicles') }}" class="logo">🚗 RentWheels</a>
+    <a href="{{ url_for('browse_vehicles') }}" class="logo">
+      <span class="logo-mark">RW</span>
+      <span class="logo-text">Rent <strong>Wheels</strong></span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
     <div class="nav-links">
       <a href="{{ url_for('browse_vehicles') }}">Browse</a>
       {% if session.user_id %}
@@ -25,7 +32,7 @@
         <a href="{{ url_for('logout') }}" class="btn-outline">Logout</a>
       {% else %}
         <a href="{{ url_for('login') }}">Login</a>
-        <a href="{{ url_for('register') }}" class="btn-primary">Register</a>
+        <a href="{{ url_for('register') }}" class="btn-primary">Get Started</a>
       {% endif %}
     </div>
   </nav>

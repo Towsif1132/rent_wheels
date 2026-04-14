@@ -45,13 +45,13 @@
         </div>
         <p class="db-created">Created: {{ booking.created_at.strftime('%d %b %Y, %I:%M %p') }}</p>
 
-        <div style="margin-top: 15px; margin-bottom: 20px; padding: 12px; background: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px;">
-           <p style="margin: 0; font-size: 0.9rem;">
+        <div class="payment-meta-box">
+           <p>
              <strong>Payment Status:</strong> 
-             <span style="color: {{ '#28a745' if booking.payment_status == 'Completed' else '#dc3545' if booking.payment_status == 'Failed' else '#856404' }}; font-weight: bold;">
+             <span class="payment-status-{{ booking.payment_status|lower if booking.payment_status else 'pending' }}">
                {{ booking.payment_status if booking.payment_status else 'Pending' }}
              </span><br>
-             <strong style="display:inline-block; margin-top: 4px;">Method:</strong> {{ booking.payment_method if booking.payment_method else 'N/A' }}
+             <strong class="payment-method-label">Method:</strong> {{ booking.payment_method if booking.payment_method else 'N/A' }}
            </p>
         </div>
 

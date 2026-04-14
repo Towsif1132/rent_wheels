@@ -2,16 +2,17 @@
 {% block title %}Browse Vehicles | RentWheels{% endblock %}
 {% block content %}
 <section class="page-hero">
-  <h1>Find Your Perfect Vehicle</h1>
-  <p>Browse our fleet of well-maintained vehicles available for rent</p>
+  <span class="hero-pill">Available Now</span>
+  <h1>Find Your Perfect Ride</h1>
+  <p>Daily and hourly rentals - Premium fleet - Instant booking</p>
 </section>
 <div class="filter-bar">
   <form method="GET" action="{{ url_for('browse_vehicles') }}" class="filter-form" id="filterForm">
     <div class="filter-group">
-      <input type="text" name="search" value="{{ search }}" placeholder="🔍  Search by name, brand or type...">
+      <input type="text" name="search" value="{{ search }}" placeholder="Search by name, brand or type...">
     </div>
     <div class="filter-group">
-      <select name="category" onchange="document.getElementById('filterForm').submit()">
+      <select name="category" title="Filter by category" onchange="document.getElementById('filterForm').submit()">
         <option value="">All Categories</option>
         {% for cat in categories %}
           <option value="{{ cat.category }}" {% if selected_category == cat.category %}selected{% endif %}>{{ cat.category }}</option>
@@ -19,9 +20,9 @@
       </select>
     </div>
     <div class="filter-group price-range">
-      <input type="number" name="min_price" value="{{ min_price }}" placeholder="Min ৳/day" min="0">
+      <input type="number" name="min_price" value="{{ min_price }}" placeholder="Min" min="0">
       <span>—</span>
-      <input type="number" name="max_price" value="{{ max_price }}" placeholder="Max ৳/day" min="0">
+      <input type="number" name="max_price" value="{{ max_price }}" placeholder="Max" min="0">
     </div>
     <button type="submit" class="btn-primary">Search</button>
     <a href="{{ url_for('browse_vehicles') }}" class="btn-outline">Reset</a>
@@ -47,9 +48,9 @@
       </div>
       <p class="brand">{{ v.brand }}</p>
       <div class="vehicle-specs">
-        <span>🪑 {{ v.seats }} Seats</span>
-        <span>⛽ {{ v.fuel_type }}</span>
-        <span>⚙️ {{ v.transmission }}</span>
+        <span>{{ v.seats }} seats</span>
+        <span>{{ v.fuel_type }}</span>
+        <span>{{ v.transmission }}</span>
       </div>
       <div class="vehicle-footer">
         <div class="price">৳{{ "%.0f"|format(v.price_per_day) }}<span>/day</span></div>

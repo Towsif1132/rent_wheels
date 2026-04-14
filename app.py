@@ -102,15 +102,51 @@ def logout():
 @login_required
 def dashboard():
     conn = get_db(); cur = conn.cursor()
-    cur.execute('SELECT COUNT(*) AS c FROM vehicles');           tv = cur.fetchone()['c']
+    role = session.get('user_role')
+
+    cur.execute('SELECT COUNT(*) AS c FROM vehicles'); tv = cur.fetchone()['c']
     cur.execute("SELECT COUNT(*) AS c FROM vehicles WHERE status='available'"); av = cur.fetchone()['c']
-    cur.execute('SELECT COUNT(*) AS c FROM users');              tu = cur.fetchone()['c']
-    cur.execute("SELECT COUNT(*) AS c FROM bookings");           tb = cur.fetchone()['c']
+    cur.execute('SELECT COUNT(*) AS c FROM users'); tu = cur.fetchone()['c']
+    cur.execute("SELECT COUNT(*) AS c FROM bookings"); tb = cur.fetchone()['c']
+
+    pending = 0
+    dashboard_bookings = []
+
+    if role == 'admin':
+        cur.execute("SELECT COUNT(*) AS c FROM bookings WHERE status='pending'")
+        pending = cur.fetchone()['c']
+
+        cur.execute('''SELECT b.id, b.rental_type, b.total_price, b.status,
+            v.name AS vehicle_name, u.name AS customer_name
+            FROM bookings b
+            JOIN vehicles v ON b.vehicle_id=v.id
+            JOIN users u ON b.user_id=u.id
+            ORDER BY b.created_at DESC''')
+        dashboard_bookings = cur.fetchall()
+    else:
+        cur.execute("SELECT COUNT(*) AS c FROM bookings WHERE user_id=%s AND status='pending'", (session['user_id'],))
+        pending = cur.fetchone()['c']
+
+        cur.execute('''SELECT b.id, b.rental_type, b.total_price, b.status,
+            v.name AS vehicle_name, u.name AS customer_name
+            FROM bookings b
+            JOIN vehicles v ON b.vehicle_id=v.id
+            JOIN users u ON b.user_id=u.id
+            WHERE b.user_id=%s
+            ORDER BY b.created_at DESC''',
+            (session['user_id'],))
+        dashboard_bookings = cur.fetchall()
+
     cur.close(); conn.close()
-    return render_template('dashboard.html', name=session['user_name'],
-                           role=session['user_role'],
-                           total_vehicles=tv, available=av,
-                           total_users=tu, total_bookings=tb)
+    return render_template('dashboard.html',
+                           name=session['user_name'],
+                           role=role,
+                           total_vehicles=tv,
+                           available=av,
+                           total_users=tu,
+                           total_bookings=tb,
+                           pending_bookings=pending,
+                           dashboard_bookings=dashboard_bookings)
 
 
 """BROWSING VEHICLE"""
@@ -261,8 +297,6 @@ def toggle_status(vid):
 
 
 
-"""module 2"""
-
 """for booking vehicle"""
 @app.route('/book/<int:vid>', methods=['GET', 'POST'])
 @login_required
@@ -373,6 +407,7 @@ def book_vehicle(vid):
 
     cur.close(); conn.close()
     return render_template('book_vehicle.html', vehicle=vehicle, today=date.today().isoformat())
+
 
 """Payment Checkout"""
 @app.route('/bookings/<int:bid>/payment', methods=['GET', 'POST'])

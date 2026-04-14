@@ -28,11 +28,27 @@ if (imageInput) {
 
 // Auto-hide flash alerts after 4
 document.addEventListener('DOMContentLoaded', () => {
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.querySelector('.nav-links');
+
+  if (navToggle && navLinks) {
+    navToggle.addEventListener('click', () => {
+      const isOpen = navLinks.classList.toggle('open');
+      navToggle.textContent = isOpen ? '✕' : '☰';
+      navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  }
+
   document.querySelectorAll('.alert').forEach(alert => {
     setTimeout(() => {
       alert.style.transition = 'opacity 0.5s';
       alert.style.opacity = '0';
       setTimeout(() => alert.remove(), 500);
     }, 4000);
+  });
+
+  document.querySelectorAll('.vehicle-card, .booking-card, .dash-card, .stat-card, .bstat-card, .db-card, .form-card, .admin-header, .table-wrap, .auth-container').forEach((el, index) => {
+    el.style.animationDelay = `${Math.min(index * 0.04, 0.35)}s`;
+    el.classList.add('reveal-up');
   });
 });

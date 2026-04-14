@@ -2,26 +2,72 @@
 {% block title %}Dashboard | RentWheels{% endblock %}
 {% block content %}
 <div class="dashboard-container">
-  <div class="dash-welcome">
-    <h1>Welcome, {{ name }}! 👋</h1>
-    <p>You are logged in as <span class="badge-{{ role }}">{{ role }}</span></p>
+  <div class="dash-welcome admin-dash-welcome">
+    <h1>Welcome back, {{ name }}! 👋</h1>
+    <p>Here's your RentWheels overview for today.</p>
   </div>
-  <div class="dash-stats">
-    <div class="stat-card"><span class="stat-icon">🚗</span><div><strong>{{ total_vehicles }}</strong><p>Total Vehicles</p></div></div>
-    <div class="stat-card"><span class="stat-icon">✅</span><div><strong>{{ available }}</strong><p>Available</p></div></div>
-    <div class="stat-card"><span class="stat-icon">📋</span><div><strong>{{ total_bookings }}</strong><p>Total Bookings</p></div></div>
-    <div class="stat-card"><span class="stat-icon">👥</span><div><strong>{{ total_users }}</strong><p>Users</p></div></div>
+
+  <div class="admin-dash-stats">
+    <div class="admin-stat-card stat-vehicles"><span class="stat-icon">🚗</span><div><p>Vehicles</p><strong>{{ total_vehicles }}</strong></div></div>
+    <div class="admin-stat-card stat-available"><span class="stat-icon">✅</span><div><p>Available</p><strong>{{ available }}</strong></div></div>
+    <div class="admin-stat-card stat-bookings"><span class="stat-icon">📋</span><div><p>{% if role == 'admin' %}Bookings{% else %}My Bookings{% endif %}</p><strong>{% if role == 'admin' %}{{ total_bookings }}{% else %}{{ dashboard_bookings|length }}{% endif %}</strong></div></div>
+    <div class="admin-stat-card stat-pending"><span class="stat-icon">⏳</span><div><p>Pending</p><strong>{{ pending_bookings }}</strong></div></div>
   </div>
-  <div class="dash-grid">
+
+  <div class="admin-dash-actions">
+    <a href="{{ url_for('browse_vehicles') }}" class="admin-action-card"><span>🔍</span><h3>Browse</h3><p>Find vehicles</p></a>
     {% if role == 'admin' %}
-      <a href="{{ url_for('admin_vehicles') }}" class="dash-card"><span>🚘</span><h3>Manage Vehicles</h3><p>Add, edit or remove vehicles.</p></a>
-      <a href="{{ url_for('admin_bookings') }}" class="dash-card"><span>📋</span><h3>Manage Bookings</h3><p>View and update all bookings.</p></a>
-      <a href="{{ url_for('add_vehicle') }}" class="dash-card"><span>➕</span><h3>Add Vehicle</h3><p>Add a new vehicle to fleet.</p></a>
+      <a href="{{ url_for('admin_bookings') }}" class="admin-action-card"><span>🗓️</span><h3>Bookings</h3><p>All reservations</p></a>
+      <a href="{{ url_for('admin_bookings') }}" class="admin-action-card"><span>💳</span><h3>Payments</h3><p>Payment history</p></a>
     {% else %}
-      <a href="{{ url_for('browse_vehicles') }}" class="dash-card"><span>🔍</span><h3>Browse Vehicles</h3><p>Find and book your perfect ride.</p></a>
-      <a href="{{ url_for('my_bookings') }}" class="dash-card"><span>📅</span><h3>My Bookings</h3><p>View your reservations.</p></a>
+      <a href="{{ url_for('my_bookings') }}" class="admin-action-card"><span>🗓️</span><h3>Bookings</h3><p>My reservations</p></a>
+      <a href="{{ url_for('my_bookings') }}" class="admin-action-card"><span>💳</span><h3>Payments</h3><p>Payment history</p></a>
     {% endif %}
-    <div class="dash-card"><span>💳</span><h3>Payments</h3><p>Module 3 — Coming soon.</p></div>
+  </div>
+
+  <div class="admin-history-panel">
+      <div class="admin-history-head">
+        <h2>⚡ {% if role == 'admin' %}Recent Bookings{% else %}My Recent Bookings{% endif %}</h2>
+        {% if role == 'admin' %}
+        <a href="{{ url_for('admin_bookings') }}" class="btn-outline btn-sm">View All →</a>
+        {% else %}
+        <a href="{{ url_for('my_bookings') }}" class="btn-outline btn-sm">View All →</a>
+        {% endif %}
+      </div>
+      {% if dashboard_bookings %}
+      <div class="table-wrap admin-history-wrap">
+        <table class="admin-table admin-history-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Vehicle</th>
+              <th>Customer</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in dashboard_bookings %}
+            <tr>
+              <td><strong>#{{ b.id }}</strong></td>
+              <td>{{ b.vehicle_name }}</td>
+              <td>{{ b.customer_name }}</td>
+              <td><span class="rental-type-badge rt-{{ b.rental_type }}">{{ b.rental_type }}</span></td>
+              <td><strong>৳{{ "%.0f"|format(b.total_price) }}</strong></td>
+              <td><span class="booking-status-badge bs-{{ b.status }}">{{ b.status|capitalize }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <span>📭</span>
+        <h3>No booking history yet</h3>
+        <p>Bookings will appear here after customers place orders.</p>
+      </div>
+      {% endif %}
   </div>
 </div>
 {% endblock %}
