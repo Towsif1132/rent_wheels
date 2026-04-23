@@ -147,3 +147,33 @@ Trigger deployment from Vercel UI (or push to your connected branch).
 
 - File uploads are disabled on Vercel serverless in this app and fallback behavior is used.
 - Uploaded files are not persisted on serverless instances.
+
+## Run with Docker Compose
+
+This repository includes a complete local stack with Flask app + MySQL.
+
+### 1) Start the stack
+
+```bash
+docker compose up --build -d
+```
+
+The app will be available at `http://127.0.0.1:5000`.
+
+### 2) View logs
+
+```bash
+docker compose logs -f app
+```
+
+### 3) Stop the stack
+
+```bash
+docker compose down
+```
+
+To also remove the MySQL volume data:
+
+```bash
+docker compose down -v
+```

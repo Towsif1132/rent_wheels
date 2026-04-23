@@ -1,0 +1,42 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: rent-wheels-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rentwheels
+      MYSQL_DATABASE: vehicle_rental
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-prentwheels"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rent-wheels-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SECRET_KEY: vehicle_rental_secret_2026
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: rentwheels
+      DB_NAME: vehicle_rental
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./static/uploads:/app/static/uploads
+
+volumes:
+  mysql_data:

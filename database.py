@@ -2,16 +2,45 @@ import pymysql
 import pymysql.cursors
 import hashlib
 import os
+from urllib.parse import urlparse, unquote, parse_qs
 
-DB_CONFIG = {
-    'host':     os.getenv('DB_HOST', 'localhost'),
-    'port':     int(os.getenv('DB_PORT', '3306')),
-    'user':     os.getenv('DB_USER', 'root'),
-    'password': os.getenv('DB_PASSWORD', ''),
-    'database': os.getenv('DB_NAME', 'vehicle_rental'),
-    'cursorclass': pymysql.cursors.DictCursor,
-    'charset':  'utf8mb4'
-}
+def _db_config_from_url(db_url):
+    parsed = urlparse(db_url)
+    if parsed.scheme not in ('mysql', 'mysql+pymysql'):
+        raise ValueError('DATABASE_URL must start with mysql:// or mysql+pymysql://')
+
+    db_name = parsed.path.lstrip('/')
+    query = parse_qs(parsed.query)
+
+    return {
+        'host': parsed.hostname or 'localhost',
+        'port': int(parsed.port or 3306),
+        'user': unquote(parsed.username or 'root'),
+        'password': unquote(parsed.password or ''),
+        'database': db_name or os.getenv('DB_NAME', 'vehicle_rental'),
+        'cursorclass': pymysql.cursors.DictCursor,
+        'charset': query.get('charset', ['utf8mb4'])[0]
+    }
+
+
+def _build_db_config():
+    # Priority: full URL (useful on Render) -> individual env vars (local/docker).
+    db_url = os.getenv('DATABASE_URL', '').strip()
+    if db_url:
+        return _db_config_from_url(db_url)
+
+    return {
+        'host': os.getenv('DB_HOST', 'localhost'),
+        'port': int(os.getenv('DB_PORT', '3306')),
+        'user': os.getenv('DB_USER', 'root'),
+        'password': os.getenv('DB_PASSWORD', ''),
+        'database': os.getenv('DB_NAME', 'vehicle_rental'),
+        'cursorclass': pymysql.cursors.DictCursor,
+        'charset': 'utf8mb4'
+    }
+
+
+DB_CONFIG = _build_db_config()
 
 def get_db():
     return pymysql.connect(**DB_CONFIG)
@@ -25,11 +54,24 @@ def init_db():
 
     cfg = {k: v for k, v in DB_CONFIG.items() if k != 'database'}
     cfg['cursorclass'] = pymysql.cursors.DictCursor
-    conn = pymysql.connect(**cfg)
-    cur  = conn.cursor()
+    conn = None
+    cur = None
 
-    cur.execute(f"CREATE DATABASE IF NOT EXISTS `{db_name}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
-    cur.execute(f"USE `{db_name}`")
+    # First try admin-level connection to auto-create/use DB.
+    # If provider denies CREATE DATABASE (common on managed DBs),
+    # fall back to connecting directly to the existing database.
+    try:
+        conn = pymysql.connect(**cfg)
+        cur = conn.cursor()
+        cur.execute(f"CREATE DATABASE IF NOT EXISTS `{db_name}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+        cur.execute(f"USE `{db_name}`")
+    except Exception:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+        conn = pymysql.connect(**DB_CONFIG)
+        cur = conn.cursor()
 
    
     cur.execute('''
