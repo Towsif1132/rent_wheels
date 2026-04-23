@@ -1,13 +1,14 @@
 import pymysql
 import pymysql.cursors
 import hashlib
+import os
 
 DB_CONFIG = {
-    'host':     'localhost',
-    'port':     3306,
-    'user':     'root',
-    'password': '',           
-    'database': 'vehicle_rental',
+    'host':     os.getenv('DB_HOST', 'localhost'),
+    'port':     int(os.getenv('DB_PORT', '3306')),
+    'user':     os.getenv('DB_USER', 'root'),
+    'password': os.getenv('DB_PASSWORD', ''),
+    'database': os.getenv('DB_NAME', 'vehicle_rental'),
     'cursorclass': pymysql.cursors.DictCursor,
     'charset':  'utf8mb4'
 }
@@ -20,14 +21,15 @@ def _hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def init_db():
-    
+    db_name = DB_CONFIG['database']
+
     cfg = {k: v for k, v in DB_CONFIG.items() if k != 'database'}
     cfg['cursorclass'] = pymysql.cursors.DictCursor
     conn = pymysql.connect(**cfg)
     cur  = conn.cursor()
 
-    cur.execute("CREATE DATABASE IF NOT EXISTS vehicle_rental CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
-    cur.execute("USE vehicle_rental")
+    cur.execute(f"CREATE DATABASE IF NOT EXISTS `{db_name}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+    cur.execute(f"USE `{db_name}`")
 
    
     cur.execute('''

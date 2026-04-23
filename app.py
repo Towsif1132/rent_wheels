@@ -6,7 +6,7 @@ import hashlib, os
 from datetime import datetime, date
 
 app = Flask(__name__)
-app.secret_key = 'vehicle_rental_secret_2026'
+app.secret_key = os.getenv('SECRET_KEY', 'vehicle_rental_secret_2026')
 
 UPLOAD_FOLDER    = os.path.join('static', 'uploads')
 ALLOWED_EXT      = {'png', 'jpg', 'jpeg', 'webp'}
@@ -218,8 +218,11 @@ def add_vehicle():
         if 'image' in request.files:
             f = request.files['image']
             if f and f.filename and allowed_file(f.filename):
-                img = secure_filename(f.filename)
-                f.save(os.path.join(app.config['UPLOAD_FOLDER'], img))
+                if os.getenv('VERCEL'):
+                    flash('Image upload is disabled on Vercel serverless deployment. Using placeholder image.', 'info')
+                else:
+                    img = secure_filename(f.filename)
+                    f.save(os.path.join(app.config['UPLOAD_FOLDER'], img))
         conn = get_db(); cur = conn.cursor()
         cur.execute('''INSERT INTO vehicles
             (name,brand,category,price_per_day,price_per_hour,seats,fuel_type,transmission,description,status,image)
@@ -252,8 +255,11 @@ def edit_vehicle(vid):
         if 'image' in request.files:
             f = request.files['image']
             if f and f.filename and allowed_file(f.filename):
-                img = secure_filename(f.filename)
-                f.save(os.path.join(app.config['UPLOAD_FOLDER'], img))
+                if os.getenv('VERCEL'):
+                    flash('Image upload is disabled on Vercel serverless deployment. Keeping existing image.', 'info')
+                else:
+                    img = secure_filename(f.filename)
+                    f.save(os.path.join(app.config['UPLOAD_FOLDER'], img))
         cur.execute('''UPDATE vehicles SET name=%s,brand=%s,category=%s,price_per_day=%s,price_per_hour=%s,
             seats=%s,fuel_type=%s,transmission=%s,description=%s,status=%s,image=%s WHERE id=%s''',
             (request.form['name'].strip(), request.form['brand'].strip(),
@@ -445,7 +451,7 @@ def payment_checkout(bid):
 def payment_thank_you(bid):
     conn = get_db(); cur = conn.cursor()
     cur.execute('''SELECT b.*, v.name AS vehicle_name 
-                   FROM book ings b JOIN vehicles v ON b.vehicle_id = v.id 
+                   FROM bookings b JOIN vehicles v ON b.vehicle_id = v.id 
                    WHERE b.id=%s AND b.user_id=%s''', (bid, session['user_id']))
     booking = cur.fetchone()
     cur.close(); conn.close()

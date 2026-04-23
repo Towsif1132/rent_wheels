@@ -109,3 +109,41 @@ Change these credentials after first login if you use this beyond local testing.
 - Add automated tests (unit/integration)
 - Add Docker setup for one-command local startup
 - Integrate a real payment gateway
+
+## Deploy on Vercel
+
+This project is now configured for Vercel deployment using `@vercel/python`.
+
+### 1) Push code to GitHub
+
+Make sure this repository is pushed to your GitHub account.
+
+### 2) Import project in Vercel
+
+1. Open Vercel dashboard.
+2. Click **Add New Project**.
+3. Import this GitHub repository.
+
+Vercel will detect `vercel.json` and use `api/index.py` as the serverless entry point.
+
+### 3) Set environment variables in Vercel
+
+In your Vercel project settings, add:
+
+- `SECRET_KEY`
+- `DB_HOST`
+- `DB_PORT`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_NAME`
+
+Use a cloud MySQL database (for example PlanetScale, Railway, Neon MySQL-compatible, or your own hosted MySQL).
+
+### 4) Deploy
+
+Trigger deployment from Vercel UI (or push to your connected branch).
+
+## Notes for Vercel
+
+- File uploads are disabled on Vercel serverless in this app and fallback behavior is used.
+- Uploaded files are not persisted on serverless instances.
