@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: rent-wheels
+    runtime: docker
+    repo: https://github.com/Towsif1132/rent_wheels
+    branch: main
+    rootDir: .
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
