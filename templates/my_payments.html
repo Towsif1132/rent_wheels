@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}My Payments | RentWheels{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  <div class="page-head">
+    <div><h1>💳 My Payments</h1><p>All your payment transactions</p></div>
+    <a href="{{ url_for('browse_vehicles') }}" class="btn btn-primary">+ New Booking</a>
+  </div>
+  <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat-card"><div class="si si-green">💰</div><div><div class="stat-label">Total Spent</div><div class="stat-value green">৳{{ "%.0f"|format(total_spent) }}</div></div></div>
+    <div class="stat-card"><div class="si si-blue">📋</div><div><div class="stat-label">Payments</div><div class="stat-value">{{ payments|length }}</div></div></div>
+    <div class="stat-card"><div class="si si-yellow">⏳</div><div><div class="stat-label">Pending</div><div class="stat-value yellow">{{ payments|selectattr('status','equalto','unpaid')|list|length }}</div></div></div>
+  </div>
+  {% if payments %}
+  <div class="payment-list">
+    {% for p in payments %}
+    <div class="payment-card">
+      <div class="pc-icon {{ p.status }}">{{ '✓' if p.status=='paid' else ('↩' if p.status=='refunded' else '⏳') }}</div>
+      <div class="pc-info">
+        <div class="pc-top">
+          <div>
+            <div class="pc-vehicle">{{ p.vehicle_name }}</div>
+            <div class="pc-meta">Booking #{{ p.booking_id }} · {% if p.rental_type=='hourly' %}{{ p.pickup_date }} {{ p.pickup_time }}→{{ p.return_time }} ({{ p.total_hours }}hrs){% else %}{{ p.pickup_date }}→{{ p.return_date }} ({{ p.total_days }}d){% endif %} · {{ p.method|upper }}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="pc-amount">৳{{ "%.0f"|format(p.amount) }}</div>
+            <span class="pill pill-{{ p.status }}">{{ p.status|capitalize }}</span>
+          </div>
+        </div>
+      </div>
+      {% if p.status=='unpaid' %}<a href="{{ url_for('pay_booking',bid=p.booking_id) }}" class="btn btn-primary btn-sm">Pay Now</a>{% endif %}
+      {% if p.status=='paid' %}<a href="{{ url_for('payment_receipt',bid=p.booking_id) }}" class="btn btn-ghost btn-sm">🧾 Receipt</a>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><div class="empty-icon">💳</div><h3>No payments yet</h3><p>Complete a booking to see history.</p><a href="{{ url_for('browse_vehicles') }}" class="btn btn-primary">Browse Vehicles</a></div>
+  {% endif %}
+</div>
+{% endblock %}

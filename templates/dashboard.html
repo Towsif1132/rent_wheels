@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard | RentWheels{% endblock %}
+{% block content %}
+<div class="dash-wrap">
+  <div class="dash-welcome">
+    <h1>Welcome back, {{ name }}! 👋</h1>
+    <p>Here's your RentWheels overview for today.</p>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card" style="--grad:linear-gradient(90deg,#f43f5e,#fb7185)">
+      <div class="si si-blue">🚗</div>
+      <div><div class="stat-label">Vehicles</div><div class="stat-value">{{ total_vehicles }}</div></div>
+    </div>
+    <div class="stat-card" style="--grad:linear-gradient(90deg,#10b981,#34d399)">
+      <div class="si si-green">✅</div>
+      <div><div class="stat-label">Available</div><div class="stat-value green">{{ available }}</div></div>
+    </div>
+    <div class="stat-card" style="--grad:linear-gradient(90deg,#8b5cf6,#a78bfa)">
+      <div class="si si-purple">📋</div>
+      <div><div class="stat-label">Bookings</div><div class="stat-value purple">{{ total_bookings }}</div></div>
+    </div>
+    <div class="stat-card" style="--grad:linear-gradient(90deg,#f59e0b,#fbbf24)">
+      <div class="si si-yellow">⏳</div>
+      <div><div class="stat-label">Pending</div><div class="stat-value yellow">{{ pending }}</div></div>
+    </div>
+    {% if role == 'admin' %}
+    <div class="stat-card" style="--grad:linear-gradient(90deg,#10b981,#06b6d4)">
+      <div class="si si-green">💰</div>
+      <div><div class="stat-label">Revenue</div><div class="stat-value green">৳{{ "%.0f"|format(revenue) }}</div></div>
+    </div>
+    <div class="stat-card" style="--grad:linear-gradient(90deg,#3b82f6,#6366f1)">
+      <div class="si si-blue">👥</div>
+      <div><div class="stat-label">Users</div><div class="stat-value">{{ total_users }}</div></div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="dash-quick">
+    {% if role == 'admin' %}
+      <a href="{{ url_for('admin_vehicles') }}" class="dq-card"><div class="dq-icon">🚘</div><h3>Vehicles</h3><p>Manage fleet</p></a>
+      <a href="{{ url_for('admin_bookings') }}" class="dq-card"><div class="dq-icon">📋</div><h3>Bookings</h3><p>All reservations</p></a>
+      <a href="{{ url_for('admin_payments') }}" class="dq-card"><div class="dq-icon">💳</div><h3>Payments</h3><p>Track revenue</p></a>
+      <a href="{{ url_for('admin_reports') }}" class="dq-card"><div class="dq-icon">📊</div><h3>Reports</h3><p>Analytics</p></a>
+      <a href="{{ url_for('add_vehicle') }}" class="dq-card"><div class="dq-icon">➕</div><h3>Add Vehicle</h3><p>Expand fleet</p></a>
+    {% else %}
+      <a href="{{ url_for('browse_vehicles') }}" class="dq-card"><div class="dq-icon">🔍</div><h3>Browse</h3><p>Find vehicles</p></a>
+      <a href="{{ url_for('my_bookings') }}" class="dq-card"><div class="dq-icon">📅</div><h3>Bookings</h3><p>My reservations</p></a>
+      <a href="{{ url_for('my_payments') }}" class="dq-card"><div class="dq-icon">💳</div><h3>Payments</h3><p>Payment history</p></a>
+    {% endif %}
+  </div>
+  {% if recent_bookings %}
+  <div class="table-wrap">
+    <div class="section-head">
+      <h3>⚡ Recent Bookings</h3>
+      <a href="{{ url_for('admin_bookings') if role=='admin' else url_for('my_bookings') }}" class="btn btn-ghost btn-sm">View All →</a>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>#</th><th>Vehicle</th><th>Customer</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for b in recent_bookings %}
+        <tr>
+          <td><strong>#{{ b.id }}</strong></td>
+          <td>{{ b.vehicle_name }}</td>
+          <td>{{ b.customer_name }}</td>
+          <td><span class="rt-badge rt-{{ b.rental_type }}">{{ b.rental_type }}</span></td>
+          <td><strong>৳{{ "%.0f"|format(b.total_price) }}</strong></td>
+          <td><span class="pill pill-{{ b.status }}">{{ b.status }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

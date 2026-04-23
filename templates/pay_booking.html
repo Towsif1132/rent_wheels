@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Pay | RentWheels{% endblock %}
+{% block content %}
+<div class="pay-page">
+  <a href="{{ url_for('my_bookings') }}" class="back-link">← My Bookings</a>
+  <div class="pay-layout">
+    <div class="pay-summary">
+      <div class="pay-sum-img"><img src="{{ url_for('static',filename='uploads/'+booking.image) }}" onerror="this.src='{{ url_for('static',filename='placeholder.jpg') }}'" alt="{{ booking.vehicle_name }}"></div>
+      <div class="pay-sum-body">
+        <span class="cat-tag">{{ booking.category }}</span>
+        <h3>{{ booking.vehicle_name }}</h3>
+        <p>Booking #{{ booking.id }}</p>
+        <div class="info-list" style="margin-bottom:14px">
+          <div class="info-row"><span class="info-label">Type</span><span class="info-val"><span class="rt-badge rt-{{ booking.rental_type }}">{{ '⏱ Hourly' if booking.rental_type=='hourly' else '📅 Daily' }}</span></span></div>
+          {% if booking.rental_type=='hourly' %}
+          <div class="info-row"><span class="info-label">Date</span><span class="info-val">{{ booking.pickup_date }}</span></div>
+          <div class="info-row"><span class="info-label">Time</span><span class="info-val">{{ booking.pickup_time }} → {{ booking.return_time }}</span></div>
+          <div class="info-row"><span class="info-label">Duration</span><span class="info-val">{{ booking.total_hours }} hrs</span></div>
+          {% else %}
+          <div class="info-row"><span class="info-label">Pickup</span><span class="info-val">{{ booking.pickup_date }}</span></div>
+          <div class="info-row"><span class="info-label">Return</span><span class="info-val">{{ booking.return_date }}</span></div>
+          <div class="info-row"><span class="info-label">Duration</span><span class="info-val">{{ booking.total_days }} days</span></div>
+          {% endif %}
+        </div>
+        <div class="pay-amount-box"><span class="pal">Amount Due</span><div class="pav">৳{{ "%.0f"|format(booking.total_price) }}</div></div>
+      </div>
+    </div>
+    <div class="pay-form">
+      <h2>Complete Payment</h2>
+      <p class="pay-sub">Choose your preferred payment method</p>
+      <form method="POST" id="payForm">
+        <div class="form-section-label" style="margin-bottom:12px">Payment Method</div>
+        <div class="method-grid">
+          {% for m,icon,label in [('cash','💵','Cash'),('card','💳','Card'),('bkash','📱','bKash'),('nagad','📲','Nagad'),('rocket','🚀','Rocket')] %}
+          <label class="method-btn" onclick="selectMethod('{{ m }}',this)">
+            <input type="radio" name="method" value="{{ m }}" {% if m=='cash' %}checked{% endif %}>
+            <span>{{ icon }}</span><small>{{ label }}</small>
+          </label>
+          {% endfor %}
+        </div>
+        <div class="txn-field form-group" id="txnField">
+          <label>Transaction ID</label>
+          <input type="text" name="transaction_id" placeholder="Enter transaction reference...">
+          <small>Required for digital payments</small>
+        </div>
+        <div class="form-group"><label>Note (optional)</label><textarea name="note" rows="2" placeholder="Payment notes..."></textarea></div>
+        <div class="pay-total-box">
+          <div class="ptb-row"><span>Booking Amount</span><span>৳{{ "%.0f"|format(booking.total_price) }}</span></div>
+          <div class="ptb-total"><span>Total Payable</span><span>৳{{ "%.0f"|format(booking.total_price) }}</span></div>
+        </div>
+        <button type="submit" class="btn btn-success btn-xl btn-full">✓ Confirm Payment</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+document.querySelector('.method-btn').classList.add('selected');
+function selectMethod(m,el){
+  document.querySelectorAll('.method-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('txnField').classList.toggle('show',m!=='cash');
+}
+</script>
+{% endblock %}

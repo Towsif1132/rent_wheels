@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Reports | Admin{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  <div class="page-head">
+    <div><h1>📊 Reports & Analytics</h1><p>Business performance overview</p></div>
+    <button onclick="window.print()" class="btn btn-ghost btn-sm">🖨 Print</button>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="si si-green">💰</div><div><div class="stat-label">Total Revenue</div><div class="stat-value green">৳{{ "%.0f"|format(total_rev) }}</div></div></div>
+    <div class="stat-card"><div class="si si-blue">🏁</div><div><div class="stat-label">Completed</div><div class="stat-value">{{ completed }}</div></div></div>
+    <div class="stat-card"><div class="si si-red">❌</div><div><div class="stat-label">Cancelled</div><div class="stat-value red">{{ cancelled }}</div></div></div>
+    <div class="stat-card"><div class="si si-purple">👥</div><div><div class="stat-label">Customers</div><div class="stat-value purple">{{ customers }}</div></div></div>
+    <div class="stat-card"><div class="si si-yellow">📅</div><div><div class="stat-label">This Month</div><div class="stat-value green">৳{{ "%.0f"|format(this_month.revenue) if this_month and this_month.revenue else '0' }}</div></div></div>
+  </div>
+  <div class="report-grid">
+    <div class="report-card">
+      <div class="rc-header"><h3>📈 Monthly Revenue</h3><span>Last 12 months</span></div>
+      <div class="rc-body">
+        {% if monthly %}
+        {% set max_r = monthly|map(attribute='revenue')|map('float')|max %}
+        <div class="chart-wrap">
+          {% for m in monthly %}
+          {% set h = ((m.revenue|float/max_r)*190)|int if max_r>0 else 4 %}
+          <div class="bar-item">
+            <div class="bar-val">৳{{ (m.revenue|float/1000)|round(1) }}k</div>
+            <div class="bar-fill" style="height:{{ h }}px"></div>
+            <div class="bar-label">{{ m.month }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding:40px"><div class="empty-icon">📊</div><p>No data yet</p></div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="report-card">
+      <div class="rc-header"><h3>💳 By Method</h3></div>
+      <div class="rc-body">
+        {% if by_method %}
+        {% set max_m = by_method|map(attribute='total')|map('float')|max %}
+        {% set colors = ['#f43f5e','#8b5cf6','#10b981','#f59e0b','#3b82f6'] %}
+        <div class="method-pie">
+          {% for m in by_method %}
+          {% set pct = ((m.total|float/max_m)*100)|int if max_m>0 else 0 %}
+          <div class="pie-row">
+            <div class="pie-dot" style="background:{{ colors[loop.index0%5] }}"></div>
+            <div class="pie-label">{{ m.method|upper }}</div>
+            <div class="pie-bar-wrap"><div class="pie-bar-fill" style="width:{{ pct }}%;background:{{ colors[loop.index0%5] }}"></div></div>
+            <div class="pie-count">{{ m.count }}</div>
+            <div class="pie-amount">৳{{ "%.0f"|format(m.total) }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding:40px"><p>No data yet</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="report-card">
+    <div class="rc-header"><h3>🏆 Top Vehicles by Revenue</h3><span>All time</span></div>
+    <div class="rc-body">
+      {% if top_vehicles %}
+      <div class="tv-list">
+        {% for v in top_vehicles %}
+        <div class="tv-row">
+          <div class="tv-rank {% if loop.index==1 %}gold{% elif loop.index==2 %}silver{% elif loop.index==3 %}bronze{% endif %}">{{ loop.index }}</div>
+          <div class="tv-info"><div class="tv-name">{{ v.name }}</div><div class="tv-cat">{{ v.brand }} · {{ v.category }}</div></div>
+          <div class="tv-stats"><div class="tv-rev">৳{{ "%.0f"|format(v.revenue) }}</div><div class="tv-cnt">{{ v.bookings }} bookings</div></div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:30px"><p>No data yet</p></div>
+      {% endif %}
+    </div>
+  </div>
+  {% if monthly %}
+  <div class="report-card" style="margin-top:22px">
+    <div class="rc-header"><h3>📋 Monthly Breakdown</h3></div>
+    <div class="table-wrap" style="border:none;border-radius:0;box-shadow:none;background:transparent">
+      <table class="data-table">
+        <thead><tr><th>Month</th><th>Transactions</th><th>Revenue</th><th>Avg/Txn</th></tr></thead>
+        <tbody>
+          {% for m in monthly|reverse %}
+          <tr>
+            <td><strong>{{ m.month }}</strong></td>
+            <td>{{ m.count }}</td>
+            <td><strong style="color:var(--success)">৳{{ "%.0f"|format(m.revenue) }}</strong></td>
+            <td>৳{{ "%.0f"|format(m.revenue|float/m.count) if m.count>0 else 0 }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

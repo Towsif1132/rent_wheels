@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}My Bookings | RentWheels{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  <div class="page-head">
+    <div><h1>📋 My Bookings</h1><p>All your reservations in one place</p></div>
+    <a href="{{ url_for('browse_vehicles') }}" class="btn btn-primary">+ New Booking</a>
+  </div>
+
+  {% if bookings %}
+  <div class="booking-list">
+    {% for b in bookings %}
+    <div class="booking-card">
+      <div class="bc-accent ac-{{ b.status }}"></div>
+
+      <div class="bc-img">
+        <img src="{{ url_for('static', filename='uploads/' + b.image) }}"
+             onerror="this.src='/static/placeholder.jpg'"
+             alt="{{ b.vehicle_name }}">
+      </div>
+
+      <div class="bc-body">
+        <div class="bc-top">
+          <div>
+            <div class="bc-title">{{ b.vehicle_name }}</div>
+            <div class="bc-brand">{{ b.brand }}</div>
+          </div>
+          <div class="bc-badges">
+            <span class="pill pill-{{ b.status }}">{{ b.status|capitalize }}</span>
+            {% if b.rental_type == 'hourly' %}
+              <span class="rt-badge rt-hourly">⏱ Hourly</span>
+            {% else %}
+              <span class="rt-badge rt-daily">📅 Daily</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="bc-meta">
+          {% if b.rental_type == 'hourly' %}
+            <div class="bc-meta-item">
+              <div class="bc-meta-label">Date</div>
+              <div class="bc-meta-val">{{ b.pickup_date }}</div>
+            </div>
+            <div class="bc-meta-item">
+              <div class="bc-meta-label">Time</div>
+              <div class="bc-meta-val">{{ b.pickup_time }} → {{ b.return_time }}</div>
+            </div>
+            <div class="bc-meta-item">
+              <div class="bc-meta-label">Duration</div>
+              <div class="bc-meta-val">{{ b.total_hours }} hr{% if b.total_hours > 1 %}s{% endif %}</div>
+            </div>
+          {% else %}
+            <div class="bc-meta-item">
+              <div class="bc-meta-label">Pickup</div>
+              <div class="bc-meta-val">{{ b.pickup_date }}</div>
+            </div>
+            <div class="bc-meta-item">
+              <div class="bc-meta-label">Return</div>
+              <div class="bc-meta-val">{{ b.return_date }}</div>
+            </div>
+            <div class="bc-meta-item">
+              <div class="bc-meta-label">Duration</div>
+              <div class="bc-meta-val">{{ b.total_days }} day{% if b.total_days > 1 %}s{% endif %}</div>
+            </div>
+          {% endif %}
+
+          <div class="bc-meta-item">
+            <div class="bc-meta-label">Total</div>
+            <div class="bc-meta-val accent">৳{{ "%.0f"|format(b.total_price) }}</div>
+          </div>
+
+          <div class="bc-meta-item">
+            <div class="bc-meta-label">Payment</div>
+            <div class="bc-meta-val">
+              {% set pstat = b.payment_status if b.payment_status else 'unpaid' %}
+              <span class="pill pill-{{ pstat }}" style="font-size:.68rem">{{ pstat|capitalize }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bc-footer">
+          <span class="bc-id">Booking #{{ b.id }} · {{ b.created_at.strftime('%d %b %Y') }}</span>
+          <div class="bc-actions">
+            <a href="{{ url_for('booking_detail', bid=b.id) }}" class="btn btn-ghost btn-sm">Details</a>
+
+            {% if b.status in ('pending', 'confirmed') and b.payment_status != 'paid' %}
+              <a href="{{ url_for('pay_booking', bid=b.id) }}" class="btn btn-success btn-sm">💳 Pay</a>
+            {% elif b.payment_status == 'paid' %}
+              <a href="{{ url_for('payment_receipt', bid=b.id) }}" class="btn btn-dark btn-sm">🧾 Receipt</a>
+            {% endif %}
+
+            {% if b.status in ('pending', 'confirmed') %}
+              <form method="POST" action="{{ url_for('cancel_booking', bid=b.id) }}"
+                    onsubmit="return confirm('Cancel Booking #{{ b.id }}?')" style="display:inline">
+                <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <h3>No bookings yet</h3>
+    <p>Book your first vehicle today!</p>
+    <a href="{{ url_for('browse_vehicles') }}" class="btn btn-primary">Browse Vehicles</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

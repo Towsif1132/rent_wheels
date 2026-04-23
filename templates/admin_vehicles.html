@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Manage Vehicles | Admin{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  <div class="page-head">
+    <div><h1>🚗 Vehicle Fleet</h1><p>Add, edit and manage your vehicles</p></div>
+    <a href="{{ url_for('add_vehicle') }}" class="btn btn-primary">+ Add Vehicle</a>
+  </div>
+  <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat-card"><div class="si si-blue">📦</div><div><div class="stat-label">Total</div><div class="stat-value">{{ vehicles|length }}</div></div></div>
+    <div class="stat-card"><div class="si si-green">✅</div><div><div class="stat-label">Available</div><div class="stat-value green">{{ vehicles|selectattr('status','equalto','available')|list|length }}</div></div></div>
+    <div class="stat-card"><div class="si si-red">🔴</div><div><div class="stat-label">Unavailable</div><div class="stat-value red">{{ vehicles|selectattr('status','equalto','unavailable')|list|length }}</div></div></div>
+  </div>
+  <form method="GET" class="search-bar">
+    <input type="text" name="search" value="{{ search }}" placeholder="🔍  Search vehicles...">
+    <button type="submit" class="btn btn-primary btn-sm">Search</button>
+    {% if search %}<a href="{{ url_for('admin_vehicles') }}" class="btn btn-ghost btn-sm">Clear</a>{% endif %}
+  </form>
+  {% if vehicles %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>#</th><th>Image</th><th>Vehicle</th><th>Category</th><th>Seats</th><th>Fuel</th><th>Day Rate</th><th>Hr Rate</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for v in vehicles %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td><img src="{{ url_for('static',filename='uploads/'+v.image) }}" onerror="this.src='{{ url_for('static',filename='placeholder.jpg') }}'" class="table-thumb"></td>
+          <td><div class="tvc"><div><strong>{{ v.name }}</strong><small>{{ v.brand }}</small></div></div></td>
+          <td><span class="cat-tag">{{ v.category }}</span></td>
+          <td>{{ v.seats }}</td>
+          <td>{{ v.fuel_type }}</td>
+          <td><strong>৳{{ "%.0f"|format(v.price_per_day) }}</strong></td>
+          <td>৳{{ "%.0f"|format(v.price_per_hour) }}</td>
+          <td>
+            <form method="POST" action="{{ url_for('toggle_status',vid=v.id) }}" style="display:inline">
+              <button type="submit" class="pill {% if v.status=='available' %}pill-confirmed{% else %}pill-cancelled{% endif %}" style="border:none;cursor:pointer;font-family:inherit">{{ v.status|capitalize }}</button>
+            </form>
+          </td>
+          <td><div style="display:flex;gap:6px">
+            <a href="{{ url_for('vehicle_detail',vid=v.id) }}" class="btn-icon" title="View">👁</a>
+            <a href="{{ url_for('edit_vehicle',vid=v.id) }}" class="btn-icon edit" title="Edit">✏️</a>
+            <form method="POST" action="{{ url_for('delete_vehicle',vid=v.id) }}" onsubmit="return confirm('Delete {{ v.name }}?')" style="display:inline">
+              <button type="submit" class="btn-icon danger" title="Delete">🗑</button>
+            </form>
+          </div></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><div class="empty-icon">🚘</div><h3>No vehicles yet</h3><a href="{{ url_for('add_vehicle') }}" class="btn btn-primary">Add First Vehicle</a></div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Book {{ vehicle.name }} | RentWheels{% endblock %}
+{% block content %}
+<div class="booking-page">
+  <a href="{{ url_for('vehicle_detail',vid=vehicle.id) }}" class="back-link">← Back to Vehicle</a>
+  <div class="booking-layout">
+    <div class="bv-card">
+      <div class="bv-img">
+        <img src="{{ url_for('static',filename='uploads/'+vehicle.image) }}" onerror="this.src='{{ url_for('static',filename='placeholder.jpg') }}'" alt="{{ vehicle.name }}">
+      </div>
+      <div class="bv-body">
+        <span class="cat-tag">{{ vehicle.category }}</span>
+        <h3>{{ vehicle.name }}</h3>
+        <p class="bv-brand">{{ vehicle.brand }}</p>
+        <div class="bv-specs">
+          <span>🪑 {{ vehicle.seats }} Seats</span>
+          <span>⛽ {{ vehicle.fuel_type }}</span>
+          <span>⚙️ {{ vehicle.transmission }}</span>
+        </div>
+        <div class="rate-grid">
+          <div class="rate-cell"><span>Daily Rate</span><strong>৳{{ "%.0f"|format(vehicle.price_per_day) }}/day</strong></div>
+          <div class="rate-cell"><span>Hourly Rate</span><strong>৳{{ "%.0f"|format(vehicle.price_per_hour if vehicle.price_per_hour else vehicle.price_per_day/8) }}/hr</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="bf-card">
+      <h2>Confirm Booking</h2>
+      <p class="bf-sub">Select daily or hourly rental below</p>
+      <form method="POST" id="bookingForm">
+        <div class="rental-toggle">
+          <button type="button" class="rt-btn active" id="btnDaily" onclick="setType('daily')">📅 Daily Rental</button>
+          <button type="button" class="rt-btn" id="btnHourly" onclick="setType('hourly')">⏱ Hourly Rental</button>
+        </div>
+        <input type="hidden" name="rental_type" id="rentalType" value="daily">
+        <div class="form-group">
+          <label id="pickupLabel">Pickup Date</label>
+          <input type="date" name="pickup_date" id="pickupDate" min="{{ today }}" required>
+        </div>
+        <div id="dailyFields">
+          <div class="form-group"><label>Return Date</label><input type="date" name="return_date" id="returnDate" min="{{ today }}" required></div>
+        </div>
+        <div id="hourlyFields" style="display:none">
+          <div class="time-row">
+            <div class="form-group"><label>Pickup Time</label><input type="time" name="pickup_time" id="pickupTime"></div>
+            <div class="form-group"><label>Return Time</label><input type="time" name="return_time" id="returnTime"></div>
+          </div>
+        </div>
+        <div class="price-summary" id="priceSummary" style="display:none">
+          <div class="ps-row"><span id="durLabel">Duration</span><strong id="durVal">—</strong></div>
+          <div class="ps-row"><span>Rate</span><strong id="rateVal">—</strong></div>
+          <div class="ps-row ps-total"><span>Total</span><strong id="totalVal">৳0</strong></div>
+        </div>
+        <div class="form-group"><label>Note (optional)</label><textarea name="note" rows="2" placeholder="Any special requests..."></textarea></div>
+        <button type="submit" class="btn btn-primary btn-xl btn-full">🚗 Confirm Booking</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+const ppd={{ vehicle.price_per_day }},pph={{ vehicle.price_per_hour if vehicle.price_per_hour else (vehicle.price_per_day/8)|round(2) }};
+function setType(t){
+  document.getElementById('rentalType').value=t;
+  const h=t==='hourly';
+  document.getElementById('btnDaily').classList.toggle('active',!h);
+  document.getElementById('btnHourly').classList.toggle('active',h);
+  document.getElementById('dailyFields').style.display=h?'none':'block';
+  document.getElementById('hourlyFields').style.display=h?'block':'none';
+  document.getElementById('pickupLabel').textContent=h?'Rental Date':'Pickup Date';
+  document.getElementById('returnDate').required=!h;
+  document.getElementById('pickupTime').required=h;
+  document.getElementById('returnTime').required=h;
+  calcPrice();
+}
+function calcPrice(){
+  const t=document.getElementById('rentalType').value,s=document.getElementById('priceSummary');
+  if(t==='daily'){
+    const p=new Date(document.getElementById('pickupDate').value),r=new Date(document.getElementById('returnDate').value);
+    if(document.getElementById('pickupDate').value&&document.getElementById('returnDate').value&&r>p){
+      const d=Math.round((r-p)/86400000);
+      document.getElementById('durVal').textContent=d+' day'+(d!==1?'s':'');
+      document.getElementById('rateVal').textContent='৳'+ppd.toLocaleString()+'/day';
+      document.getElementById('totalVal').textContent='৳'+(d*ppd).toLocaleString();
+      s.style.display='block';
+    }else s.style.display='none';
+  }else{
+    const pt=document.getElementById('pickupTime').value,rt=document.getElementById('returnTime').value;
+    if(pt&&rt&&rt>pt){
+      const[ph,pm]=pt.split(':').map(Number),[rh,rm]=rt.split(':').map(Number);
+      const m=(rh*60+rm)-(ph*60+pm),h=Math.floor(m/60),xm=m%60;
+      if(h>=1){
+        document.getElementById('durVal').textContent=h+' hr'+(h!==1?'s':'')+(xm>0?' '+xm+'min':'');
+        document.getElementById('rateVal').textContent='৳'+pph.toLocaleString()+'/hr';
+        document.getElementById('totalVal').textContent='৳'+(h*pph).toLocaleString();
+        s.style.display='block';
+      }else s.style.display='none';
+    }else s.style.display='none';
+  }
+}
+['pickupDate','returnDate','pickupTime','returnTime'].forEach(id=>document.getElementById(id).addEventListener('change',calcPrice));
+document.getElementById('returnDate').required=true;
+</script>
+{% endblock %}

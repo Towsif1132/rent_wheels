@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}Booking #{{ booking.id }} | RentWheels{% endblock %}
+{% block content %}
+<div class="db-wrap">
+  <a href="{{ url_for('admin_bookings') if session.user_role=='admin' else url_for('my_bookings') }}" class="back-link">← Back</a>
+  <div class="db-grid">
+    <div>
+      <div class="db-card">
+        <div class="db-card-label">Vehicle</div>
+        <img src="{{ url_for('static',filename='uploads/'+booking.image) }}" onerror="this.src='{{ url_for('static',filename='placeholder.jpg') }}'" class="db-vehicle-img">
+        <div class="info-list">
+          <div class="info-row"><span class="info-label">Name</span><span class="info-val">{{ booking.vehicle_name }}</span></div>
+          <div class="info-row"><span class="info-label">Brand</span><span class="info-val">{{ booking.brand }}</span></div>
+          <div class="info-row"><span class="info-label">Category</span><span class="info-val">{{ booking.category }}</span></div>
+          <div class="info-row"><span class="info-label">Fuel</span><span class="info-val">{{ booking.fuel_type }}</span></div>
+          <div class="info-row"><span class="info-label">Transmission</span><span class="info-val">{{ booking.transmission }}</span></div>
+        </div>
+      </div>
+      <div class="db-card">
+        <div class="db-card-label">Customer</div>
+        <div class="info-list">
+          <div class="info-row"><span class="info-label">Name</span><span class="info-val">{{ booking.customer_name }}</span></div>
+          <div class="info-row"><span class="info-label">Email</span><span class="info-val">{{ booking.email }}</span></div>
+          <div class="info-row"><span class="info-label">Phone</span><span class="info-val">{{ booking.phone }}</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="db-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
+          <div class="db-bid">Booking #{{ booking.id }}</div>
+          <div style="display:flex;gap:6px">
+            <span class="pill pill-{{ booking.status }}">{{ booking.status|capitalize }}</span>
+            <span class="rt-badge rt-{{ booking.rental_type }}">{{ '⏱ Hourly' if booking.rental_type=='hourly' else '📅 Daily' }}</span>
+          </div>
+        </div>
+        <div class="db-date">Created {{ booking.created_at.strftime('%d %b %Y, %I:%M %p') }}</div>
+        <div class="date-banner">
+          {% if booking.rental_type=='hourly' %}
+          <div class="date-col"><span>Rental Date</span><strong>{{ booking.pickup_date }}</strong></div>
+          <div class="date-arrow">⏱</div>
+          <div class="date-col"><span>Time Slot</span><strong>{{ booking.pickup_time }} → {{ booking.return_time }}</strong></div>
+          {% else %}
+          <div class="date-col"><span>Pickup</span><strong>{{ booking.pickup_date }}</strong></div>
+          <div class="date-arrow">→</div>
+          <div class="date-col"><span>Return</span><strong>{{ booking.return_date }}</strong></div>
+          {% endif %}
+        </div>
+        <div class="price-box">
+          {% if booking.rental_type=='hourly' %}
+          <div class="pb-row"><span>Duration</span><strong>{{ booking.total_hours }} hour{% if booking.total_hours>1 %}s{% endif %}</strong></div>
+          <div class="pb-row"><span>Rate</span><strong>৳{{ "%.0f"|format(booking.price_per_hour) }}/hr</strong></div>
+          {% else %}
+          <div class="pb-row"><span>Duration</span><strong>{{ booking.total_days }} day{% if booking.total_days>1 %}s{% endif %}</strong></div>
+          <div class="pb-row"><span>Rate</span><strong>৳{{ "%.0f"|format(booking.price_per_day) }}/day</strong></div>
+          {% endif %}
+          <div class="pb-row pb-total"><span>Total Amount</span><strong>৳{{ "%.0f"|format(booking.total_price) }}</strong></div>
+        </div>
+        <div class="db-card" style="margin:0 0 14px;padding:14px 16px;background:var(--dark4)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:.68rem;text-transform:uppercase;color:var(--text3);font-weight:700;margin-bottom:5px">Payment</div>
+              <span class="pill pill-{{ booking.payment_status or 'unpaid' }}">{{ (booking.payment_status or 'unpaid')|capitalize }}</span>
+              {% if booking.payment_method %}<small style="color:var(--text3);margin-left:8px">via {{ booking.payment_method|upper }}</small>{% endif %}
+            </div>
+            {% if booking.payment_status != 'paid' and booking.status in ('pending','confirmed') and session.user_role!='admin' %}
+            <a href="{{ url_for('pay_booking',bid=booking.id) }}" class="btn btn-success btn-sm">💳 Pay Now</a>
+            {% elif booking.payment_status=='paid' %}
+            <a href="{{ url_for('payment_receipt',bid=booking.id) }}" class="btn btn-dark btn-sm">🧾 Receipt</a>
+            {% endif %}
+          </div>
+        </div>
+        {% if booking.note %}
+        <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:10px;padding:12px 14px;font-size:.86rem;color:var(--text2);margin-bottom:14px">📝 {{ booking.note }}</div>
+        {% endif %}
+        {% if session.user_role=='admin' %}
+        <div class="admin-act">
+          <h4>Update Status</h4>
+          <form method="POST" action="{{ url_for('update_booking_status',bid=booking.id) }}" class="s-form">
+            <select name="status" style="padding:9px 12px;background:var(--dark4);border:1px solid var(--border-glass);border-radius:9px;color:var(--text);font-family:var(--font);outline:none">
+              {% for s in ['pending','confirmed','cancelled','completed'] %}
+                <option value="{{ s }}" {% if booking.status==s %}selected{% endif %}>{{ s|capitalize }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">Update</button>
+          </form>
+        </div>
+        {% endif %}
+        {% if session.user_role!='admin' and booking.status in ('pending','confirmed') %}
+        <form method="POST" action="{{ url_for('cancel_booking',bid=booking.id) }}" onsubmit="return confirm('Cancel this booking?')">
+          <button type="submit" class="cancel-btn">✕ Cancel Booking</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

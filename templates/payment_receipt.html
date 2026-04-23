@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Receipt #{{ data.id }} | RentWheels{% endblock %}
+{% block content %}
+<div class="receipt-page">
+  <div class="receipt-card">
+    <div class="receipt-header">
+      <div class="receipt-check">✓</div>
+      <h2>Payment Confirmed!</h2>
+      <p>Your booking is confirmed. Thank you for choosing RentWheels.</p>
+    </div>
+    <div class="receipt-body">
+      <div class="receipt-amount">
+        <span>Amount Paid</span>
+        <strong>৳{{ "%.0f"|format(data.paid_amount) }}</strong>
+      </div>
+      <div class="receipt-grid">
+        <div class="rg-cell"><div class="rg-label">Booking ID</div><div class="rg-val">#{{ data.id }}</div></div>
+        <div class="rg-cell"><div class="rg-label">Payment ID</div><div class="rg-val">#{{ data.payment_id }}</div></div>
+        <div class="rg-cell"><div class="rg-label">Customer</div><div class="rg-val">{{ data.customer_name }}</div></div>
+        <div class="rg-cell"><div class="rg-label">Phone</div><div class="rg-val">{{ data.phone }}</div></div>
+        <div class="rg-cell"><div class="rg-label">Vehicle</div><div class="rg-val">{{ data.vehicle_name }}</div></div>
+        <div class="rg-cell"><div class="rg-label">Category</div><div class="rg-val">{{ data.category }}</div></div>
+        {% if data.rental_type=='hourly' %}
+        <div class="rg-cell"><div class="rg-label">Date</div><div class="rg-val">{{ data.pickup_date }}</div></div>
+        <div class="rg-cell"><div class="rg-label">Time</div><div class="rg-val">{{ data.pickup_time }} → {{ data.return_time }}</div></div>
+        <div class="rg-cell"><div class="rg-label">Duration</div><div class="rg-val">{{ data.total_hours }} hr{% if data.total_hours>1 %}s{% endif %}</div></div>
+        {% else %}
+        <div class="rg-cell"><div class="rg-label">Pickup</div><div class="rg-val">{{ data.pickup_date }}</div></div>
+        <div class="rg-cell"><div class="rg-label">Return</div><div class="rg-val">{{ data.return_date }}</div></div>
+        <div class="rg-cell"><div class="rg-label">Duration</div><div class="rg-val">{{ data.total_days }} day{% if data.total_days>1 %}s{% endif %}</div></div>
+        {% endif %}
+        <div class="rg-cell"><div class="rg-label">Method</div><div class="rg-val">{{ data.payment_method|upper if data.payment_method else '—' }}</div></div>
+        <div class="rg-cell"><div class="rg-label">Paid At</div><div class="rg-val">{{ data.paid_at.strftime('%d %b %Y, %I:%M %p') if data.paid_at else '—' }}</div></div>
+        {% if data.transaction_id %}
+        <div class="rg-cell" style="grid-column:1/-1"><div class="rg-label">Transaction ID</div><div class="rg-val">{{ data.transaction_id }}</div></div>
+        {% endif %}
+      </div>
+      <div class="receipt-actions">
+        <a href="{{ url_for('my_bookings') }}" class="btn btn-ghost">My Bookings</a>
+        <button onclick="window.print()" class="btn btn-dark">🖨 Print</button>
+        <a href="{{ url_for('browse_vehicles') }}" class="btn btn-primary">Book Again →</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

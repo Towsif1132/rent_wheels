@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Browse Vehicles | RentWheels{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="page-hero-tag">🚗 Available Now</div>
+  <h1>Find Your Perfect Ride</h1>
+  <p>Daily & hourly rentals · Premium fleet · Instant booking</p>
+</div>
+<div class="filter-bar">
+  <form method="GET" action="{{ url_for('browse_vehicles') }}" class="filter-form" id="ff">
+    <input class="filter-input wide" type="text" name="search" value="{{ search }}" placeholder="🔍  Search by name, brand or type...">
+    <select class="filter-select" name="category" onchange="document.getElementById('ff').submit()">
+      <option value="">All Categories</option>
+      {% for cat in categories %}
+        <option value="{{ cat.category }}" {% if selected_category==cat.category %}selected{% endif %}>{{ cat.category }}</option>
+      {% endfor %}
+    </select>
+    <div class="price-range">
+      <input class="filter-input" type="number" name="min_price" value="{{ min_price }}" placeholder="Min ৳" min="0">
+      <span>—</span>
+      <input class="filter-input" type="number" name="max_price" value="{{ max_price }}" placeholder="Max ৳" min="0">
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm">Search</button>
+    <a href="{{ url_for('browse_vehicles') }}" class="btn btn-ghost btn-sm">Reset</a>
+  </form>
+</div>
+<div class="results-count">{{ vehicles|length }} vehicle{% if vehicles|length!=1 %}s{% endif %} found</div>
+{% if vehicles %}
+<div class="vehicle-grid">
+  {% for v in vehicles %}
+  <div class="vehicle-card">
+    <div class="v-img-wrap">
+      <img src="{{ url_for('static',filename='uploads/'+v.image) }}" onerror="this.src='{{ url_for('static',filename='placeholder.jpg') }}'" alt="{{ v.name }}">
+      <div class="v-img-overlay"></div>
+      <span class="v-status {{ v.status }}">{{ v.status }}</span>
+      <span class="v-category-tag">{{ v.category }}</span>
+    </div>
+    <div class="v-body">
+      <div class="v-name">{{ v.name }}</div>
+      <div class="v-brand">{{ v.brand }}</div>
+      <div class="v-specs">
+        <span class="v-spec">🪑 {{ v.seats }}</span>
+        <span class="v-spec">⛽ {{ v.fuel_type }}</span>
+        <span class="v-spec">⚙️ {{ v.transmission }}</span>
+      </div>
+      <div class="v-footer">
+        <div class="v-price">৳{{ "%.0f"|format(v.price_per_day) }}<span>/day</span></div>
+        <a href="{{ url_for('vehicle_detail',vid=v.id) }}" class="btn btn-primary btn-sm">View →</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state"><div class="empty-icon">🚘</div><h3>No vehicles found</h3><p>Try adjusting your filters.</p><a href="{{ url_for('browse_vehicles') }}" class="btn btn-primary">View All</a></div>
+{% endif %}
+{% endblock %}
